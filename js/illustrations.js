@@ -125,16 +125,6 @@ window.MedicalIllustrations = {
         </div>
     `,
 
-    // ---- Muscular Dystrophy - Gowers Sign ----
-    muscularDystrophyGowers: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Gowers%27s_sign.png"
-                 alt="علامة غاورز - الطفل يتسلق على ساقيه للوقوف بسبب ضعف العضلات"
-                 loading="lazy" />
-            <div class="illustration-caption">علامة غاورز (Gowers' Sign) - الطفل يستخدم يديه للوقوف بسبب ضعف العضلات القريبة - المصدر: Wikimedia Commons (Public Domain, 1879)</div>
-        </div>
-    `,
-
     // ---- Equinus / Toe Walking - Illustration ----
     equinus: `
         <div class="illustration-container">
@@ -152,16 +142,6 @@ window.MedicalIllustrations = {
                  alt="صورة سريرية للمشي على أطراف الأصابع"
                  loading="lazy" />
             <div class="illustration-caption">صورة توضيحية للمشي على أطراف الأصابع (Toe Walking) - المصدر: Wikimedia Commons (CC BY-SA 4.0)</div>
-        </div>
-    `,
-
-    // ---- Muscular Dystrophy - Pseudohypertrophy ----
-    muscularDystrophyBody: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/49/Drawing_of_boy_with_Duchenne_muscular_dystrophy.png"
-                 alt="رسم توضيحي لطفل مصاب بالحثل العضلي الدوشيني يظهر تضخم الساقين الكاذب"
-                 loading="lazy" />
-            <div class="illustration-caption">طفل مصاب بالحثل العضلي الدوشيني - تضخم كاذب في الساقين مع ضمور الذراعين - المصدر: Wikimedia Commons (Public Domain)</div>
         </div>
     `
 };
