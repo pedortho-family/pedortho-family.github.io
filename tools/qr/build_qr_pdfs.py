@@ -3,11 +3,11 @@
 colours, icons and card shapes as the website (C2). Each PDF is an HTML page
 printed by Chrome, so a change to the site's look is easy to carry over here.
 
-  QR-All-Topics.pdf         page 1 = conditions and care guides, page 2 = post-op procedures
+  QR-All-Topics.pdf         conditions and care guides; fractures (2 pages); post-op procedures
   QR-Individual-Topics.pdf  one page per topic, large code
-  QR-Clinic-Poster.pdf      wall poster, larger codes, topics then post-op procedures
+  QR-Clinic-Poster.pdf      wall poster, larger codes: conditions, care guides, fractures, procedures
   QR-Clinic-Cards.pdf       two cut-out cards per page, one per topic
-  QR-Clinic-Table-Card.pdf  front = topics, back = post-op procedures
+  QR-Clinic-Table-Card.pdf  the same pages as All Topics, under the clinic's heading
 
 Codes hold the short links (tools/qr/qr_common.py topic_url); the short-link pages
 are rebuilt first (tools/links/build_links.py), and the topic list is checked
@@ -41,6 +41,20 @@ GROUPS = [
     ("care", "أدلة العناية", "heart-handshake"),
 ]
 POSTOP = ("care", "تعليمات ما بعد العمليات", "clipboard-list")
+# Fracture pages by region, as on the website (js/app.js REGIONS). Unknown regions go last.
+REGIONS = [("upper", "الكسور: الطرف العلوي"), ("lower", "الكسور: الحوض والطرف السفلي"), ("general", "الكسور: معلومات عامة")]
+
+
+def fracture_blocks(groups):
+    """The fractures group split by region: [(key, heading, icon, items), ...]."""
+    key, _, ic, items = next(g for g in groups if g[0] == "fracture")
+    known = [r for r, _ in REGIONS]
+    out = []
+    for i, (region, title) in enumerate(REGIONS):
+        part = [t for t in items if t.get("region") == region or (i == len(REGIONS) - 1 and t.get("region") not in known)]
+        if part:
+            out.append((key, title, ic, part))
+    return out
 
 READ_SITE = r"""
     const vm = require('vm'), fs = require('fs'), path = require('path');
@@ -48,7 +62,7 @@ READ_SITE = r"""
     const ctx = { window: {} }; vm.createContext(ctx);
     for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.js')))
         vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), ctx);
-    const w = ctx.window, pick = (a) => (a || []).map(c => ({ id: c.id, name: c.name, en: c.englishName || '', desc: c.shortDesc || '' }));
+    const w = ctx.window, pick = (a) => (a || []).map(c => ({ id: c.id, name: c.name, en: c.englishName || '', desc: c.shortDesc || '', region: c.region || '' }));
     console.log(JSON.stringify({ neuro: pick(w.conditionsNeuro), bone: pick(w.conditionsSkeletal), hip: pick(w.conditionsHip),
                                  fracture: pick(w.conditionsFractures), care: pick(w.castCareData) }));
 """
@@ -284,12 +298,18 @@ def group_row(key, name, ic, items, cols):
 
 
 def sheet_pages(groups, procs, title, sub, cols, proc_cols):
-    """Topics on the first page, post-op procedures on a page of their own."""
-    topics = "".join(group_row(k, n, i, items, cols) for k, n, i, items in groups)
-    first = f'<div class="page">{head(title, sub)}{topics}{foot()}</div>'
-    second = (f'<div class="page">{head(POSTOP[1], "رمز لكل عملية: يفتح تعليماتها مباشرةً", with_main=False)}'
-              f'{group_block(POSTOP[0], POSTOP[1], POSTOP[2], procs, proc_cols, number=True)}{foot()}</div>')
-    return first + second
+    """Conditions and care guides on the first page (one row per group), then the
+    fractures (upper limb; pelvis, lower limb and general), then the procedures."""
+    topics = "".join(group_row(k, n, i, items, cols) for k, n, i, items in groups if k != "fracture")
+    pages = [f'<div class="page">{head(title, sub)}{topics}{foot()}</div>']
+    blocks = fracture_blocks(groups)
+    for chunk in (blocks[:1], blocks[1:]):
+        if chunk:
+            pages.append(f'<div class="page">{head("الكسور", "امسح رمز الكسر لفتح صفحته مباشرةً", with_main=False)}'
+                         + "".join(group_block(k, n, i, items, proc_cols) for k, n, i, items in chunk) + f'{foot()}</div>')
+    pages.append(f'<div class="page">{head(POSTOP[1], "رمز لكل عملية: يفتح تعليماتها مباشرةً", with_main=False)}'
+                 f'{group_block(POSTOP[0], POSTOP[1], POSTOP[2], procs, proc_cols, number=True)}{foot()}</div>')
+    return "".join(pages)
 
 
 HOWTO = (f'<section class="howto"><h2 class="group-h display"><span class="dot" style="background:var(--care)">{icon("qr-code")}</span>كيف تفتح الموضوع</h2>'
@@ -299,12 +319,19 @@ HOWTO = (f'<section class="howto"><h2 class="group-h display"><span class="dot" 
 
 
 def poster_pages(groups, procs):
-    """Larger codes: conditions over two pages, procedures on the third."""
-    first, second = groups[:3], groups[3:]
-    p1 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in first)
-    p2 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in second)
+    """Larger codes: conditions, then care guides with how-to, then fractures, then procedures."""
+    conditions = [g for g in groups if g[0] in ("neuro", "bone", "hip")]
+    care = [g for g in groups if g[0] == "care"]
+    p1 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in conditions)
+    p2 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in care)
+    blocks = fracture_blocks(groups)
+    fractures = "".join(
+        f'<div class="page">{head("الكسور", "امسح رمز الكسر لفتح صفحته مباشرةً", with_main=False)}'
+        + "".join(group_block(k, n, i, items, 5) for k, n, i, items in chunk) + f'{foot()}</div>'
+        for chunk in (blocks[:1], blocks[1:]) if chunk)
     return (f'<div class="page">{head("بوابة تثقيف الأسرة", "امسح الرمز بكاميرا هاتفك لفتح الموضوع مباشرةً")}{p1}{foot()}</div>'
             f'<div class="page">{head("بوابة تثقيف الأسرة", "امسح الرمز بكاميرا هاتفك لفتح الموضوع مباشرةً", with_main=False)}{p2}{HOWTO}{foot()}</div>'
+            + fractures +
             f'<div class="page">{head(POSTOP[1], "رمز لكل عملية: يفتح تعليماتها مباشرةً", with_main=False)}'
             f'{group_block(POSTOP[0], POSTOP[1], POSTOP[2], procs, 5, number=True)}{foot()}</div>')
 

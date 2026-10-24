@@ -47,6 +47,7 @@
 
     // ---- Navigation ----
     function initNavigation() {
+        renderNav();
         $('#navOverlay').addEventListener('click', closeSideNav);
 
         // Nav links
@@ -215,6 +216,38 @@
         { key: 'fracture', name: 'الكسور', icon: 'activity', items: () => window.conditionsFractures || [] },
         { key: 'care', name: 'أدلة العناية', icon: 'heart-handshake', items: () => [surgeryGuideTopic()].concat(window.castCareData || []) }
     ];
+
+    // Sub-headings inside the fractures group, from each page's `region`
+    // (js/data/conditions-fractures.js lists the pages in this order).
+    const REGIONS = [
+        ['upper', 'الطرف العلوي'],
+        ['lower', 'الحوض والطرف السفلي'],
+        ['general', 'معلومات عامة عن الكسور']
+    ];
+
+    // A group's topics split into its sub-groups: [[heading or null, topics], ...].
+    // A fracture page without a region goes under the last heading.
+    function subgroupsOf(group) {
+        const items = group.items();
+        if (group.key !== 'fracture') return [[null, items]];
+        const known = REGIONS.map(([key]) => key);
+        return REGIONS.map(([key, title], i) => [title, items.filter(c =>
+            c.region === key || (i === REGIONS.length - 1 && !known.includes(c.region)))])
+            .filter(([, list]) => list.length);
+    }
+
+    // The side menu (always open on wide screens): Home, each group, the QR page.
+    function renderNav() {
+        const link = (page, icon, name, cls) => `
+            <a href="#" class="nav-link${cls ? ' ' + cls : ''}" data-page="${page}"><span class="nav-ic">${svgIcon(icon)}</span><span>${name}</span></a>`;
+        $('#navLinks').innerHTML = link('home', 'house', 'الرئيسية', 'active') +
+            GROUPS.map(g => `<div class="nav-category">${g.name}</div>` + subgroupsOf(g).map(([title, list]) =>
+                (title ? `<div class="nav-sub">${title}</div>` : '') +
+                list.map(c => link(c.id, c.id === 'surgery-guide' ? 'stethoscope' : g.icon, c.name, 'g-' + g.key)).join('') +
+                (g.key === 'care' ? link('procedures-guide', 'clipboard-list', 'تعليمات ما بعد العمليات', 'g-care') : '')
+            ).join('')).join('') +
+            link('qr-codes', 'qr-code', 'رموز QR للطباعة');
+    }
 
     // The pre/post-surgery guide is listed with the care guides.
     function surgeryGuideTopic() {
@@ -623,10 +656,13 @@
             ${GROUPS.map(g => `
                 <section class="topic-group g-${g.key}">
                     <h2 class="group-h"><span class="group-dot">${svgIcon(g.icon)}</span>${g.name}</h2>
-                    <div class="plist">
-                        ${g.items().map(c => row(c, c.id === 'surgery-guide' ? 'stethoscope' : g.icon)).join('')}
-                        ${g.key === 'care' ? row({ id: 'procedures-guide', name: 'تعليمات ما بعد العمليات', englishName: 'Post-op Instructions' }, 'clipboard-list') : ''}
-                    </div>
+                    ${subgroupsOf(g).map(([title, list]) => `
+                        ${title ? `<h3 class="sub-h">${title}</h3>` : ''}
+                        <div class="plist">
+                            ${list.map(c => row(c, c.id === 'surgery-guide' ? 'stethoscope' : g.icon)).join('')}
+                            ${g.key === 'care' ? row({ id: 'procedures-guide', name: 'تعليمات ما بعد العمليات', englishName: 'Post-op Instructions' }, 'clipboard-list') : ''}
+                        </div>
+                    `).join('')}
                 </section>
             `).join('')}
         `;
@@ -662,6 +698,7 @@
             <div class="condition-content">
                 ${sections.map((s, i) => renderSection(s, i, shareCtx)).join('')}
             </div>
+            ${condition.source ? `<p class="page-source">${svgIcon('book-open')}<span>المصدر: ${condition.source}</span></p>` : ''}
             ${renderCtaBar(condition.id, condition.name, condition.shortDesc || '')}
         `;
     }
@@ -858,11 +895,11 @@
 
     // The ready-made print packs next to index.html (built by tools/qr).
     const QR_PDFS = [
-        ['QR-All-Topics.pdf', 'جميع المواضيع - صفحتان'],
+        ['QR-All-Topics.pdf', 'جميع المواضيع'],
         ['QR-Individual-Topics.pdf', 'صفحة لكل موضوع'],
         ['QR-Clinic-Poster.pdf', 'ملصق العيادة (Poster)'],
         ['QR-Clinic-Cards.pdf', 'بطاقات العيادة'],
-        ['QR-Clinic-Table-Card.pdf', 'بطاقة طاولة العيادة - وجهان']
+        ['QR-Clinic-Table-Card.pdf', 'بطاقة طاولة العيادة']
     ];
 
     function renderQRPage() {
