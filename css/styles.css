@@ -1049,6 +1049,12 @@ img { max-width: 100%; height: auto; }
     border-radius: 8px;
 }
 
+/* Figures with text inside keep their full width on phones */
+.illustration-container img.figure-full {
+    max-height: none;
+    width: 100%;
+}
+
 .illustration-caption {
     font-size: 13px;
     color: var(--text-secondary);
@@ -1059,6 +1065,14 @@ img { max-width: 100%; height: auto; }
 .illustration-label {
     font-size: 12px;
     fill: var(--text-secondary);
+}
+
+/* ---- Links between pages ---- */
+.page-link {
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 /* ---- Video ---- */

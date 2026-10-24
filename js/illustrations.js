@@ -115,16 +115,6 @@ window.MedicalIllustrations = {
         </div>
     `,
 
-    // ---- Cerebral Palsy Gait ----
-    cerebralPalsyGait: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Amsterdam_Gait_Classification_gb.jpg"
-                 alt="تصنيف أنماط المشي للشلل الدماغي"
-                 loading="lazy" />
-            <div class="illustration-caption">تصنيف أمستردام لأنماط المشي في الشلل الدماغي - المصدر: Wikimedia Commons</div>
-        </div>
-    `,
-
     // ---- Arthrogryposis ----
     arthrogryposis: `
         <div class="illustration-container">

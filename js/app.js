@@ -37,6 +37,7 @@
         initSearch();
         initBackToTop();
         initSharing();
+        initPageLinks();
         renderPage('home');
     });
 
@@ -264,6 +265,18 @@
                 ${SVG_SHARE}
             </button>
         `;
+    }
+
+    // Links inside page content: <a href="#" data-goto="procedures-guide" data-section="6">
+    // opens another page, optionally at one of its sections.
+    function initPageLinks() {
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[data-goto]');
+            if (!link) return;
+            e.preventDefault();
+            state.pendingSection = link.dataset.section ?? null;
+            navigateTo(link.dataset.goto);
+        });
     }
 
     function initSharing() {
