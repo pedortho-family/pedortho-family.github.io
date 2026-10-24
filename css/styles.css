@@ -895,6 +895,13 @@ img { max-width: 100%; height: auto; }
     align-items: flex-start;
 }
 
+/* The row layout is for icon + text. Boxes written without that structure
+   (a heading, then a list or more paragraphs) stack instead of splitting
+   into side-by-side columns. */
+.info-box:not(:has(> .info-box-icon)) {
+    display: block;
+}
+
 .info-box.tip {
     background: var(--info-bg);
     border-right: 4px solid var(--info);

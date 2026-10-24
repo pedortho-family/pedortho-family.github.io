@@ -125,16 +125,6 @@ window.MedicalIllustrations = {
         </div>
     `,
 
-    // ---- Charcot-Marie-Tooth (CMT) - Foot ----
-    cmtFoot: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/ed/Charcot-marie-tooth_foot.jpg"
-                 alt="صورة سريرية لقدم مصابة بمرض شاركو-ماري-توث تظهر تقوس القدم وأصابع المطرقة"
-                 loading="lazy" />
-            <div class="illustration-caption">قدم مصابة بمرض شاركو-ماري-توث (CMT) - تقوس القدم العالي وأصابع المطرقة - المصدر: Wikimedia Commons (CC BY-SA 3.0)</div>
-        </div>
-    `,
-
     // ---- Muscular Dystrophy - Gowers Sign ----
     muscularDystrophyGowers: `
         <div class="illustration-container">
