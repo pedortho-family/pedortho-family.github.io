@@ -25,16 +25,6 @@ window.MedicalIllustrations = {
         </div>
     `,
 
-    // ---- Spina Bifida ----
-    spinaBifida: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Typesofspinabifida.jpg"
-                 alt="أنواع الصلب المشقوق - رسم توضيحي طبي"
-                 loading="lazy" />
-            <div class="illustration-caption">أنواع الصلب المشقوق (Spina Bifida) - المصدر: CDC / Wikimedia Commons</div>
-        </div>
-    `,
-
     // ---- Supracondylar Fracture (pre-op) ----
     supracondylar: `
         <div class="illustration-container">
