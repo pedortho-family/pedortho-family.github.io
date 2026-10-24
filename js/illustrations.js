@@ -95,16 +95,6 @@ window.MedicalIllustrations = {
         </div>
     `,
 
-    // ---- Osteogenesis Imperfecta Rodding ----
-    oiRodding: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Two_postoperative_radiographs_of_a_patient_who_underwent_rodding_surgery_for_osteogenesis_imperfecta.png"
-                 alt="صورة أشعة بعد عملية تقويم العظام لتكون العظم الناقص"
-                 loading="lazy" />
-            <div class="illustration-caption">صور أشعة بعد عملية تثبيت القضبان لتكوّن العظم الناقص (OI) - المصدر: Wikimedia Commons</div>
-        </div>
-    `,
-
     // ---- Arthrogryposis ----
     arthrogryposis: `
         <div class="illustration-container">
