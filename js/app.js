@@ -891,6 +891,20 @@
                         <p>اطبع هذه الرموز وضعها في العيادة أو غرف الانتظار ليتمكن المرضى وأسرهم من الوصول للمعلومات بسهولة عبر هواتفهم. كل رمز يفتح موضوعه مباشرةً.</p>
                     </div>
                 </div>
+                <div class="info-box success" style="margin-bottom: 1.5rem;">
+                    <div class="info-box-icon">📥</div>
+                    <div class="info-box-content">
+                        <strong>حزم PDF جاهزة للطباعة</strong>
+                        <p style="margin-bottom: 0.75rem;">هذه ملفات PDF جاهزة - اضغط للتحميل ثم الطباعة مباشرةً للعيادة أو لمشاركة المرضى:</p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            <a href="QR-All-Topics.pdf" download class="btn btn-sm btn-primary">📄 جميع المواضيع - صفحتان</a>
+                            <a href="QR-Individual-Topics.pdf" download class="btn btn-sm btn-primary">📚 صفحة لكل موضوع</a>
+                            <a href="QR-Clinic-Poster.pdf" download class="btn btn-sm btn-primary">🪧 ملصق العيادة (Poster)</a>
+                            <a href="QR-Clinic-Cards.pdf" download class="btn btn-sm btn-primary">🃏 بطاقات العيادة</a>
+                            <a href="QR-Clinic-Table-Card.pdf" download class="btn btn-sm btn-primary">📇 بطاقة طاولة العيادة - وجهان</a>
+                        </div>
+                    </div>
+                </div>
                 <div class="qr-grid" id="qrGrid">
                     ${allConditions.map(c => renderQRCard({
                         id: c.id, icon: c.icon, title: c.name, subtitle: c.shortDesc || ''
