@@ -102,6 +102,7 @@
     }
 
     function navigateTo(page) {
+        closePageQR();
         state.currentPage = page;
         // renderPage consumes pendingSection, so read it first: a shared section
         // link scrolls to that section instead of to the top of the page.
@@ -170,35 +171,129 @@
         $('#searchResults').classList.remove('active');
     }
 
-    function performSearch(query) {
-        const results = [];
-        const allConditions = getAllConditions();
-        const q = query.toLowerCase();
+    // English or Arabic, as typed in clinic: "clubfoot", "DDH", "VDRO", «حنفاء».
+    // Arabic is compared without diacritics and with one form of alef, ta
+    // marbuta and ya, so «حنفا» still finds «القدم الحنفاء». The post-op
+    // procedures are searched too, and open straight at that procedure.
+    const EN_ALIASES = {
+        'cerebral-palsy': 'cp spastic diplegia hemiplegia quadriplegia gmfcs',
+        'spina-bifida': 'myelomeningocele mmc',
+        'charcot-marie-tooth': 'cmt hmsn cavus',
+        'neuromuscular-conditions': 'sma dmd duchenne muscular dystrophy myopathy',
+        'osteogenesis-imperfecta': 'oi brittle bone',
+        'clubfoot': 'club foot ctev talipes ponseti',
+        'ddh': 'hip dysplasia dislocated hip pavlik',
+        'flatfoot': 'flat foot pes planus planovalgus',
+        'talocalcaneal-coalition': 'tarsal coalition',
+        'perthes': 'lcpd legg calve',
+        'scfe': 'slipped epiphysis',
+        'toe-walking': 'tiptoe toe walker',
+        'in-toeing': 'intoeing pigeon toe femoral anteversion tibial torsion',
+        'arthrogryposis': 'amc',
+        'cast-care': 'cast plaster',
+        'spica-cast-care': 'hip spica',
+        'silicone-gel': 'scar',
+        'surgery-guide': 'surgery operation pre op post op anaesthesia anesthesia',
+        'procedures-guide': 'post op instructions procedures',
+        'clavicle-fracture': 'collarbone collar bone',
+        'proximal-humerus-fracture': 'humerus shoulder',
+        'humeral-shaft-fracture': 'humerus',
+        'supracondylar-fracture': 'elbow fracture gartland',
+        'radial-head-neck-fracture': 'radial neck radial head',
+        'buckle-fracture': 'torus',
+        'metacarpal-fracture': 'boxer',
+        'pelvic-avulsion-fracture': 'asis aiis ischial avulsion',
+        'femur-fractures': 'thigh femoral shaft',
+        'tibial-spine-fracture': 'tibial eminence acl',
+        'tibia-fractures': 'tibial shaft shin',
+        'transitional-ankle-fracture': 'tillaux triplane',
+        'calcaneus-fracture': 'heel',
+        'midfoot-fracture': 'talus navicular cuboid lisfranc',
+        'metatarsal-fracture': 'jones',
+        'growth-plate-fracture': 'physeal salter harris'
+    };
+    // Post-op procedures by number: the short names surgeons use.
+    const PROC_ALIASES = {
+        1: 'closed reduction arthrogram spica', 2: 'open reduction dega salter pemberton',
+        3: 'dega salter pemberton', 4: 'pinning in situ', 5: 'vdro derotation varus osteotomy',
+        6: 'vdro hip reconstruction', 7: 'pfgg', 8: 'castle mchale dastous salvage',
+        9: 'semls adductor hamstring psoas release', 10: 'sesa calcaneal block arthroereisis',
+        11: 'triple arthrodesis', 12: '8 plate eight plate hemiepiphysiodesis',
+        13: 'tal strayer vulpius gastrocnemius', 14: 'tenotomy ponseti',
+        15: 'tibialis anterior transfer posteromedial release'
+    };
 
-        allConditions.forEach(c => {
-            const nameMatch = c.name.includes(q);
-            const altMatch = (c.altNames || []).some(n => n.includes(q));
-            const keyMatch = (c.keywords || []).some(k => k.includes(q));
-            if (nameMatch || altMatch || keyMatch) {
-                results.push(c);
-            }
-        });
+    function fold(text) {
+        return String(text || '').toLowerCase()
+            .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+            .replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+            .replace(/[-_/()+'’.]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    // 3 = a field starts with the query, 2 = a word does (with or without
+    // «ال»), 1 = it appears anywhere.
+    function matchScore(fields, q) {
+        let best = 0;
+        for (const f of fields) {
+            if (!f) continue;
+            if (f.startsWith(q)) return 3;
+            if ((' ' + f).includes(' ' + q) || (' ' + f).includes(' ال' + q)) best = 2;
+            else if (!best && f.includes(q)) best = 1;
+        }
+        return best;
+    }
+
+    let searchIndex = null;
+    function buildSearchIndex() {
+        const topics = getAllConditions().map(c => ({
+            page: c.id,
+            name: c.name,
+            sub: c.englishName || c.shortDesc || '',
+            group: topicGroup(c.id),
+            fields: [c.name, c.englishName, c.id, EN_ALIASES[c.id]]
+                .concat(c.altNames || [], c.keywords || []).map(fold)
+        }));
+        const procs = ((window.proceduresGuideData || {}).sections || []).map((sec, i) => {
+            if (sec.type === 'guide-index') return null;
+            const t = splitTitle(sec.title);
+            return {
+                procedure: i,
+                name: `العملية ${t.n || i}: ${t.ar}`,
+                sub: t.en,
+                group: { key: 'care', icon: 'clipboard-list' },
+                fields: [t.ar, t.en, PROC_ALIASES[i]].map(fold)
+            };
+        }).filter(Boolean);
+        return topics.concat(procs);
+    }
+
+    function performSearch(query) {
+        const q = fold(query);
+        if (!searchIndex) searchIndex = buildSearchIndex();
+        const results = searchIndex
+            .map((item, order) => ({ item, order, score: matchScore(item.fields, q) }))
+            .filter(r => r.score)
+            .sort((a, b) => b.score - a.score || a.order - b.order)
+            .slice(0, 12)
+            .map(r => r.item);
 
         const container = $('#searchResults');
         if (results.length === 0) {
             container.innerHTML = '<div class="search-empty">لا توجد نتائج</div>';
         } else {
+            // A procedure carries data-procedure, which the page-wide click
+            // handler opens at that procedure.
             container.innerHTML = results.map(r => `
-                <div class="search-result-item" data-page="${r.id}">
-                    <div class="result-icon g-${topicGroup(r.id).key}">${svgIcon(topicGroup(r.id).icon)}</div>
+                <div class="search-result-item" ${r.procedure !== undefined ? `data-procedure="${r.procedure}"` : `data-page="${esc(r.page)}"`} role="button" tabindex="0">
+                    <div class="result-icon g-${r.group.key}">${svgIcon(r.group.icon)}</div>
                     <div class="result-text">
-                        <h4>${r.name}</h4>
-                        <p>${r.shortDesc || ''}</p>
+                        <h4>${esc(r.name)}</h4>
+                        <p dir="auto">${esc(r.sub)}</p>
                     </div>
                 </div>
             `).join('');
 
-            container.querySelectorAll('.search-result-item').forEach(item => {
+            container.querySelectorAll('.search-result-item[data-page]').forEach(item => {
                 item.addEventListener('click', () => {
                     navigateTo(item.dataset.page);
                 });
@@ -384,14 +479,125 @@
             if (!trigger) return;
             e.preventDefault();
             e.stopPropagation();
-            window.PortalShare.share({
+            const opts = {
                 target: trigger.dataset.share,
                 page: trigger.dataset.sharePage || state.currentPage,
                 section: trigger.dataset.shareSection,
                 title: trigger.dataset.shareTitle || state.currentTitle,
                 subtitle: trigger.dataset.shareSubtitle || ''
-            });
+            };
+            if (opts.target === 'qr') {
+                showPageQR(opts);
+                return;
+            }
+            closePageQR();
+            window.PortalShare.share(opts);
         }, true);
+    }
+
+    // ---- A page's QR code on screen (clinic) ----
+    // A big code on this phone for the family to scan with their own camera,
+    // so no number is needed. It holds the same short link as WhatsApp and the
+    // printed codes. The screen is kept awake while it shows, where the
+    // browser allows it.
+    let qrView = null;
+    let qrLastFocus = null;
+    let qrWake = null;
+
+    function buildPageQR() {
+        qrView = document.createElement('div');
+        qrView.className = 'qr-view';
+        qrView.setAttribute('role', 'dialog');
+        qrView.setAttribute('aria-modal', 'true');
+        qrView.setAttribute('aria-labelledby', 'qrViewTitle');
+        qrView.innerHTML = `
+            <div class="qr-view-card" tabindex="-1">
+                <div class="qr-view-head">
+                    <span class="qr-view-kicker">${svgIcon('qr-code')}<span>امسحوا الرمز بكاميرا الهاتف</span></span>
+                    <button type="button" class="ibtn qr-view-close" aria-label="إغلاق">${svgIcon('x')}</button>
+                </div>
+                <h2 class="qr-view-title" id="qrViewTitle"></h2>
+                <p class="qr-view-sub" dir="ltr"></p>
+                <canvas class="qr-view-code" role="img" aria-label="رمز QR لهذه الصفحة"></canvas>
+                <p class="qr-view-url" dir="ltr"></p>
+                <p class="qr-view-hint">تفتح الصفحة على هاتفكم مباشرةً، بالعربية</p>
+                <button type="button" class="cta-main qr-view-wa" data-share="whatsapp">${svgIcon('message-circle')}<span>أو أرسلها عبر واتساب</span></button>
+            </div>
+        `;
+        qrView.addEventListener('click', (e) => {
+            if (e.target === qrView || e.target.closest('.qr-view-close')) closePageQR();
+        });
+        document.body.appendChild(qrView);
+    }
+
+    // Whole modules only, with the standard four-module quiet zone, so the
+    // code stays sharp and quick to read at any screen size.
+    function drawBigQR(canvas, text) {
+        const m = generateQRMatrix(text);
+        if (!m) return false;
+        const cell = 16;
+        const n = m.length;
+        const side = (n + 8) * cell;
+        canvas.width = side;
+        canvas.height = side;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, side, side);
+        ctx.fillStyle = '#263540';
+        for (let r = 0; r < n; r++) {
+            for (let c = 0; c < n; c++) {
+                if (m[r][c]) ctx.fillRect((c + 4) * cell, (r + 4) * cell, cell, cell);
+            }
+        }
+        return true;
+    }
+
+    function showPageQR(o) {
+        if (!qrView) buildPageQR();
+        const url = window.PortalShare.buildUrl(o.page, o.section);
+        if (!drawBigQR(qrView.querySelector('.qr-view-code'), url)) {
+            window.PortalShare.share(Object.assign({}, o, { target: 'sheet' }));
+            return;
+        }
+        // A short heading: the Arabic name, with the English on its own line
+        // (a procedure's share title is long and mixes the two).
+        const proc = o.page === 'procedures-guide' && o.section !== undefined && o.section !== null && o.section !== ''
+            ? ((window.proceduresGuideData || {}).sections || [])[o.section] : null;
+        const topic = proc ? null : getAllConditions().find(c => c.id === o.page);
+        const t = proc ? splitTitle(proc.title) : null;
+        qrView.querySelector('.qr-view-title').textContent = t ? `العملية ${t.n}: ${t.ar}` : (topic ? topic.name : o.title || '');
+        qrView.querySelector('.qr-view-sub').textContent = t ? t.en : (topic && topic.englishName) || '';
+        qrView.querySelector('.qr-view-url').textContent = url.replace(/^https?:\/\//, '');
+        const wa = qrView.querySelector('.qr-view-wa');
+        wa.dataset.sharePage = o.page || '';
+        wa.dataset.shareTitle = o.title || '';
+        wa.dataset.shareSubtitle = o.subtitle || '';
+        if (o.section !== undefined && o.section !== null) wa.dataset.shareSection = o.section;
+        else delete wa.dataset.shareSection;
+
+        qrLastFocus = document.activeElement;
+        qrView.classList.add('visible');
+        document.body.classList.add('share-open');
+        document.addEventListener('keydown', onQRKeydown);
+        // The card, not the close button, takes focus: no ring on a tap.
+        qrView.querySelector('.qr-view-card').focus();
+        if (navigator.wakeLock && navigator.wakeLock.request) {
+            navigator.wakeLock.request('screen').then(lock => { qrWake = lock; }).catch(() => { /* not allowed here */ });
+        }
+    }
+
+    function closePageQR() {
+        if (!qrView || !qrView.classList.contains('visible')) return;
+        qrView.classList.remove('visible');
+        document.body.classList.remove('share-open');
+        document.removeEventListener('keydown', onQRKeydown);
+        if (qrWake) { qrWake.release().catch(() => {}); qrWake = null; }
+        if (qrLastFocus && typeof qrLastFocus.focus === 'function') qrLastFocus.focus();
+        qrLastFocus = null;
+    }
+
+    function onQRKeydown(e) {
+        if (e.key === 'Escape') closePageQR();
     }
 
     // ---- Page Rendering ----
@@ -527,6 +733,7 @@
             <div class="cta-space"></div>
             <div class="cta-bar">
                 <button type="button" class="cta-main" data-share="whatsapp"${attrs}>${svgIcon('message-circle')}<span>${label || 'أرسل الصفحة عبر واتساب'}</span></button>
+                <button type="button" class="ibtn ibtn-tint cta-alt" data-share="qr"${attrs} aria-label="اعرض رمز QR ليمسحه الأهل" title="رمز QR">${svgIcon('qr-code')}</button>
                 <button type="button" class="ibtn ibtn-tint cta-alt" data-share="sheet"${attrs} aria-label="مشاركة">${svgIcon('share-2')}</button>
             </div>
         `;
