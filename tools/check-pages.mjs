@@ -11,7 +11,7 @@
 // usage: node tools/check-pages.mjs [base-url] [width] [out-dir]
 //   base-url defaults to http://localhost:8161/index.html; width to 390
 import { spawn } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { rmSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,9 +38,11 @@ const pages = [['home'], ['categories'], ['qr-codes'], ['surgery-guide'], ['proc
     ...topics.map((id) => [id]),
     ...w.proceduresGuideData.sections.map((s, i) => s.type === 'guide-index' ? null : ['procedures-guide', i]).filter(Boolean)];
 
+// A fresh Chrome profile per run, deleted at the end (each one is ~50 MB).
+const PROFILE = mkdtempSync(join(tmpdir(), 'pagecheck-'));
 const port = 9600 + Math.floor(Math.random() * 100);
 const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--hide-scrollbars', `--remote-debugging-port=${port}`,
-    `--user-data-dir=${mkdtempSync(join(tmpdir(), 'pagecheck-'))}`, 'about:blank'], { stdio: 'ignore' });
+    `--user-data-dir=${PROFILE}`, 'about:blank'], { stdio: 'ignore' });
 let ver;
 for (let i = 0; i < 50 && !ver; i++) {
     try { ver = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); } catch { await sleep(200); }
@@ -184,3 +186,5 @@ if (contrastAll.size) {
 }
 console.log(`\n${pages.length} pages at ${WIDTH}px · sideways ${totals.overflow} · cut off ${totals.clipped} · broken pictures ${totals.images} · emoji ${totals.emoji} · missing icons ${totals.icons} · low contrast ${contrastAll.size} kinds`);
 ws.close(); chrome.kill();
+await sleep(500);
+rmSync(PROFILE, { recursive: true, force: true });

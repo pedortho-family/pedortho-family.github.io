@@ -3,16 +3,18 @@
 // Printed QR codes and links already sent to families depend on this.
 //
 // usage: node tools/check-links.mjs [base-url]
-//   base-url defaults to http://localhost:8161/index.html (launch config "parents-education")
+//   base-url defaults to http://localhost:8161/ (launch config "parents-education")
+//   WAIT=<ms> waits longer after each link (e.g. when testing the old address, which forwards first)
+//   FORMAT=hash checks old-style links (#access=...&page=...) instead of short links (/cerebral-palsy/)
 // The topic list comes from tools/qr/qr_common.py, the same list the QR PDFs use.
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { rmSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const BASE = process.argv[2] || 'http://localhost:8161/index.html';
+const BASE = process.argv[2] || 'http://localhost:8161/';
 const TOKEN = 'PedOrtho-Portal-2026';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -24,9 +26,11 @@ import qr_common
 print(json.dumps([{k: t.get(k) for k in ('id', 'section', 'match', 'en')} for t in qr_common.ALL_TOPICS]))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
+// A fresh Chrome profile per run, deleted at the end (each one is ~50 MB).
+const PROFILE = mkdtempSync(join(tmpdir(), 'linkcheck-'));
 const port = 9800 + Math.floor(Math.random() * 100);
 const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', `--remote-debugging-port=${port}`,
-    `--user-data-dir=${mkdtempSync(join(tmpdir(), 'linkcheck-'))}`, 'about:blank'], { stdio: 'ignore' });
+    `--user-data-dir=${PROFILE}`, 'about:blank'], { stdio: 'ignore' });
 let ver;
 for (let i = 0; i < 50 && !ver; i++) {
     try { ver = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); } catch { await sleep(200); }
@@ -64,11 +68,15 @@ const probe = (t) => `(() => {
 
 let failures = 0;
 for (const t of topics) {
-    const hash = `#access=${TOKEN}&page=${t.id}` + (t.section != null ? `&section=${t.section}` : '');
+    // FORMAT=hash checks the long form inside QR codes printed before the short
+    // links (#access=...&page=...); the default checks the short links.
+    const link = process.env.FORMAT === 'hash'
+        ? BASE + `#access=${TOKEN}&page=${t.id}` + (t.section != null ? `&section=${t.section}` : '')
+        : BASE + (t.id === 'procedures-guide' && t.section != null ? `post-op/${t.section}/` : `${t.id}/`);
     await s('Page.navigate', { url: 'about:blank' });
     await sleep(100);
-    await s('Page.navigate', { url: BASE + hash });
-    await sleep(2900);
+    await s('Page.navigate', { url: link });
+    await sleep(+(process.env.WAIT || 2900));
     const r = (await s('Runtime.evaluate', { expression: probe(t), returnByValue: true })).result.result.value;
     const problems = [];
     if (r.gate) problems.push('access gate shown');
@@ -86,4 +94,6 @@ for (const t of topics) {
 }
 console.log(`\n${topics.length - failures}/${topics.length} links open the right place`);
 ws.close(); chrome.kill();
+await sleep(500);
+rmSync(PROFILE, { recursive: true, force: true });
 process.exit(failures ? 1 : 0);

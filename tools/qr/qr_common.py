@@ -27,18 +27,18 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 # to write a trial set somewhere else.
 OUTPUT_DIR = os.environ.get("QR_OUT", ROOT)
 
-BASE_URL = "https://alahmarimousa.github.io/parents-education/"
+BASE_URL = "https://pedortho-family.github.io/"
 ACCESS_TOKEN = "PedOrtho-Portal-2026"
 
 
 def topic_url(item=None):
-    """Same URL the site's share links and on-screen QR codes use (js/share.js)."""
-    params = {"access": ACCESS_TOKEN}
-    if item:
-        params["page"] = item["id"]
-        if item.get("section") is not None:
-            params["section"] = item["section"]
-    return BASE_URL + "#" + urlencode(params)
+    """Same short link the site's share buttons and on-screen QR codes use (js/share.js):
+    /cerebral-palsy/, a post-op procedure /post-op/6/, the portal itself /."""
+    if not item or not item.get("id"):
+        return BASE_URL
+    if item["id"] == "procedures-guide" and item.get("section") is not None:
+        return f"{BASE_URL}post-op/{item['section']}/"
+    return f"{BASE_URL}{item['id']}/"
 
 
 # ---- Fonts ----
@@ -100,18 +100,18 @@ def make_qr(data, ecc=qrcode.constants.ERROR_CORRECT_M):
     qr.add_data(data)
     qr.make(fit=True)
     buf = io.BytesIO()
-    qr.make_image(fill_color="#1e293b", back_color="white").get_image().save(buf, format="PNG")
+    qr.make_image(fill_color="#263540", back_color="white").get_image().save(buf, format="PNG")
     buf.seek(0)
     return ImageReader(buf)
 
 
 # ---- Topics ----
 CAT_STYLES = {
-    "neuro":     {"name": "الحالات العصبية والعضلية", "color": HexColor("#7c3aed"), "bg": HexColor("#f5f3ff")},
-    "bone":      {"name": "أمراض العظام والمفاصل",    "color": HexColor("#2563eb"), "bg": HexColor("#eff6ff")},
-    "fracture":  {"name": "الكسور",                   "color": HexColor("#dc2626"), "bg": HexColor("#fef2f2")},
-    "guide":     {"name": "أدلة العناية",              "color": HexColor("#059669"), "bg": HexColor("#ecfdf5")},
-    "procedure": {"name": "تعليمات ما بعد العمليات",   "color": HexColor("#d97706"), "bg": HexColor("#fffbeb")},
+    "neuro":     {"name": "الحالات العصبية والعضلية", "color": HexColor("#3D6378"), "bg": HexColor("#DDE6EF")},
+    "bone":      {"name": "أمراض العظام والمفاصل",    "color": HexColor("#85652A"), "bg": HexColor("#EEE5D3")},
+    "fracture":  {"name": "الكسور",                   "color": HexColor("#56636D"), "bg": HexColor("#E4E6E1")},
+    "guide":     {"name": "أدلة العناية",              "color": HexColor("#3F7A55"), "bg": HexColor("#DCE8DE")},
+    "procedure": {"name": "تعليمات ما بعد العمليات",   "color": HexColor("#2D5D66"), "bg": HexColor("#D4E8E5")},
 }
 
 # Procedure items point at one section of the post-op guide. `match` is text

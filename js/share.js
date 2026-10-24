@@ -10,7 +10,7 @@
        so a relative who receives the link on WhatsApp lands directly on the
        topic, exactly as if they had scanned the QR code in the clinic. */
     const ACCESS_TOKEN = 'PedOrtho-Portal-2026';
-    const FALLBACK_BASE_URL = 'https://alahmarimousa.github.io/parents-education/';
+    const FALLBACK_BASE_URL = 'https://pedortho-family.github.io/';
     const PORTAL_NAME = 'بوابة تثقيف الأسرة - وحدة جراحة عظام الأطفال';
 
     // ---- Link building ----
@@ -23,14 +23,15 @@
         return FALLBACK_BASE_URL;
     }
 
+    // Short link of a page: /cerebral-palsy/, a post-op procedure /post-op/6/,
+    // any other section /surgery-guide/?section=3. Each is a small page built by
+    // tools/links/build_links.py that gives WhatsApp its preview card and then
+    // opens the portal there.
     function buildUrl(page, section) {
-        const params = new URLSearchParams();
-        params.set('access', ACCESS_TOKEN);
-        if (page) params.set('page', page);
-        if (section !== undefined && section !== null && section !== '') {
-            params.set('section', section);
-        }
-        return baseUrl() + '#' + params.toString();
+        const hasSection = section !== undefined && section !== null && section !== '';
+        if (!page || page === 'home') return baseUrl();
+        if (page === 'procedures-guide' && hasSection) return baseUrl() + 'post-op/' + section + '/';
+        return baseUrl() + page + '/' + (hasSection ? '?section=' + encodeURIComponent(section) : '');
     }
 
     function buildMessage(ctx) {

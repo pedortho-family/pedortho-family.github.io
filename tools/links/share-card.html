@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<!-- Source of images/share-card.png, the picture WhatsApp shows when a portal
+     link is shared. Render: python3 tools/links/render_card.py -->
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #F3F5F4;
+    color: #263540;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    padding: 0 96px;
+    box-sizing: border-box;
+  }
+  .mark {
+    width: 260px; height: 260px; flex: none;
+    border-radius: 72px;
+    background: #2D5D66;
+    box-shadow: 0 14px 0 #1E4148;
+    display: grid; place-items: center;
+  }
+  .mark svg { width: 150px; height: 150px; }
+  h1 { font-family: 'Baloo Bhaijaan 2', sans-serif; font-weight: 700; font-size: 92px; line-height: 1.15; margin: 0 0 6px; }
+  p { margin: 0; font-size: 40px; color: #5F6E78; }
+  .groups { display: flex; gap: 14px; margin-top: 36px; }
+  .groups span { width: 58px; height: 58px; border-radius: 50%; border: 3px solid #56636D; }
+</style>
+</head>
+<body>
+  <div class="mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>
+  </div>
+  <div>
+    <h1>بوابة تثقيف الأسرة</h1>
+    <p>وحدة جراحة عظام الأطفال</p>
+    <div class="groups" aria-hidden="true">
+      <span style="background:#DDE6EF"></span><span style="background:#EEE5D3"></span><span style="background:#DCE8DE"></span><span style="background:#E4E6E1"></span><span style="background:#D4E8E5"></span>
+    </div>
+  </div>
+</body>
+</html>

@@ -403,6 +403,12 @@
                     bindQuickNav();
                     bindFAQToggles();
                     openRequestedSection(main, true);
+                } else {
+                    // An unknown page name (a mistyped short link) opens Home.
+                    state.currentPage = 'home';
+                    main.innerHTML = renderHomePage();
+                    bindHomeEvents();
+                    page = 'home';
                 }
                 break;
         }

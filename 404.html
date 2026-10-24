@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>بوابة تثقيف الأسرة</title>
+<script>
+  // A short link with no page of its own (/<page>/, /post-op/<n>/, ?section=<n>)
+  // still opens the right place in the portal. Anything else opens Home.
+  var parts = location.pathname.split('/').filter(Boolean);
+  var section = new URLSearchParams(location.search).get('section');
+  var hash = '#access=PedOrtho-Portal-2026';
+  if (parts[0] === 'post-op' && parts[1]) {
+    hash += '&page=procedures-guide&section=' + encodeURIComponent(parts[1]);
+  } else if (parts[0] && /^[a-z0-9-]+$/.test(parts[0])) {
+    hash += '&page=' + parts[0] + (section !== null ? '&section=' + encodeURIComponent(section) : '');
+  }
+  location.replace('/' + hash);
+</script>
+</head>
+<body style="font-family:system-ui;text-align:center;padding:40px;background:#F3F5F4;color:#263540">
+<p><a href="/">بوابة تثقيف الأسرة</a></p>
+</body>
+</html>
