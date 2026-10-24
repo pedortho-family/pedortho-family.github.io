@@ -13,12 +13,16 @@
         sideNavOpen: false,
         searchOpen: false,
         // Section index requested by a shared deep link (#...&section=3)
-        pendingSection: null
+        pendingSection: null,
+        // Post-op procedure shown on its own screen, or null for the list
+        openProcedure: null
     };
 
     // ---- DOM Elements ----
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
+    // Line icon markup from js/icons.js: svgIcon('house') or svgIcon('house', 'extra-class')
+    const svgIcon = (name, cls) => window.icon(name, cls);
 
     // ---- Initialize ----
     document.addEventListener('DOMContentLoaded', () => {
@@ -43,8 +47,6 @@
 
     // ---- Navigation ----
     function initNavigation() {
-        // Menu button
-        $('#menuBtn').addEventListener('click', toggleSideNav);
         $('#navOverlay').addEventListener('click', closeSideNav);
 
         // Nav links
@@ -65,22 +67,37 @@
             });
         });
 
-        // Header title -> home
-        $('#headerTitle').addEventListener('click', () => navigateTo('home'));
+        // Top bar and page buttons are redrawn with each page, so their clicks
+        // are handled here once: data-go="<page>" opens that page.
+        document.addEventListener('click', (e) => {
+            const proc = e.target.closest('[data-procedure]');
+            if (proc) {
+                e.preventDefault();
+                state.pendingSection = proc.dataset.procedure;
+                navigateTo('procedures-guide');
+                return;
+            }
+            const go = e.target.closest('[data-go]');
+            if (go) {
+                e.preventDefault();
+                navigateTo(go.dataset.go);
+                return;
+            }
+            if (e.target.closest('#searchBtn')) toggleSearch();
+            else if (e.target.closest('#headerTitle')) navigateTo('home');
+        });
     }
 
     function toggleSideNav() {
         state.sideNavOpen = !state.sideNavOpen;
         $('#sideNav').classList.toggle('open', state.sideNavOpen);
         $('#navOverlay').classList.toggle('active', state.sideNavOpen);
-        $('#menuBtn').classList.toggle('active', state.sideNavOpen);
     }
 
     function closeSideNav() {
         state.sideNavOpen = false;
         $('#sideNav').classList.remove('open');
         $('#navOverlay').classList.remove('active');
-        $('#menuBtn').classList.remove('active');
     }
 
     function navigateTo(page) {
@@ -94,13 +111,17 @@
         const params = new URLSearchParams(window.location.hash.substring(1));
         params.set('page', page);
         // A shared section link is consumed on arrival; don't leave it in the URL.
+        // An open procedure keeps its number there, so a reload or a copied
+        // address shows the same procedure.
         params.delete('section');
+        const procedureOpen = page === 'procedures-guide' && state.openProcedure !== null;
+        if (procedureOpen) params.set('section', state.openProcedure);
         const newHash = '#' + params.toString();
         if (window.location.hash !== newHash) {
             history.replaceState(null, '', newHash);
         }
-        if (!hasPendingSection) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!hasPendingSection || procedureOpen) {
+            window.scrollTo({ top: 0, behavior: hasPendingSection ? 'auto' : 'smooth' });
         }
         closeSearch();
     }
@@ -112,7 +133,6 @@
 
     // ---- Search ----
     function initSearch() {
-        $('#searchBtn').addEventListener('click', toggleSearch);
         $('#searchClose').addEventListener('click', closeSearch);
 
         const input = $('#searchInput');
@@ -165,11 +185,11 @@
 
         const container = $('#searchResults');
         if (results.length === 0) {
-            container.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">لا توجد نتائج</div>';
+            container.innerHTML = '<div class="search-empty">لا توجد نتائج</div>';
         } else {
             container.innerHTML = results.map(r => `
                 <div class="search-result-item" data-page="${r.id}">
-                    <div class="result-icon">${r.icon}</div>
+                    <div class="result-icon g-${topicGroup(r.id).key}">${svgIcon(topicGroup(r.id).icon)}</div>
                     <div class="result-text">
                         <h4>${r.name}</h4>
                         <p>${r.shortDesc || ''}</p>
@@ -184,6 +204,48 @@
             });
         }
         container.classList.add('active');
+    }
+
+    // ---- Topic groups ----
+    // The five groups of Home, the menu and the all-sections page, in that order.
+    const GROUPS = [
+        { key: 'neuro', name: 'الأعصاب والعضلات', icon: 'brain', items: () => window.conditionsNeuro || [] },
+        { key: 'bone', name: 'العظام والمفاصل', icon: 'bone', items: () => window.conditionsSkeletal || [] },
+        { key: 'hip', name: 'الورك والمشي', icon: 'footprints', items: () => window.conditionsHip || [] },
+        { key: 'fracture', name: 'الكسور', icon: 'activity', items: () => window.conditionsFractures || [] },
+        { key: 'care', name: 'أدلة العناية', icon: 'heart-handshake', items: () => [surgeryGuideTopic()].concat(window.castCareData || []) }
+    ];
+
+    // The pre/post-surgery guide is listed with the care guides.
+    function surgeryGuideTopic() {
+        return {
+            id: 'surgery-guide',
+            name: 'دليل ما قبل وبعد الجراحة',
+            englishName: 'Before and After Surgery',
+            sections: (window.surgeryGuideData || {}).sections || []
+        };
+    }
+
+    // The group a page belongs to: its colour (g-<key>), icon and name.
+    function topicGroup(id) {
+        const g = GROUPS.find(gr => gr.items().some(c => c.id === id));
+        if (!g) return { key: 'care', icon: 'clipboard-list', name: 'دليل العمليات' };
+        return { key: g.key, icon: id === 'surgery-guide' ? 'stethoscope' : g.icon, name: g.name };
+    }
+
+    // Arabic counted nouns: 1 قسم, 2 قسمان, 3–10 أقسام, 11 and up قسماً.
+    const WORDS = {
+        section: ['قسم', 'قسمان', 'أقسام', 'قسماً'],
+        faq: ['سؤال شائع', 'سؤالان شائعان', 'أسئلة شائعة', 'سؤالاً شائعاً'],
+        link: ['رابط لتعليمات العمليات', 'رابطان لتعليمات العمليات', 'روابط لتعليمات العمليات', 'رابطاً لتعليمات العمليات'],
+        figure: ['رسم توضيحي', 'رسمان توضيحيان', 'رسوم توضيحية', 'رسماً توضيحياً'],
+        procedure: ['عملية', 'عمليتان', 'عمليات', 'عملية']
+    };
+
+    function arCount(n, forms) {
+        if (n === 1) return forms[0];
+        if (n === 2) return forms[1];
+        return n % 100 >= 3 && n % 100 <= 10 ? forms[2] : forms[3];
     }
 
     function getAllConditions() {
@@ -218,8 +280,10 @@
     // ---- Back to Top ----
     function initBackToTop() {
         const btn = $('#backToTop');
+        const header = $('.header');
         window.addEventListener('scroll', () => {
             btn.classList.toggle('hidden', window.scrollY < 400);
+            header.classList.toggle('scrolled', window.scrollY > 4);
         });
         btn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -227,8 +291,8 @@
     }
 
     // ---- Sharing ----
-    const SVG_SHARE = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92" fill="currentColor"/></svg>';
-    const SVG_WHATSAPP = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413" fill="currentColor"/></svg>';
+    const SVG_SHARE = svgIcon('share-2');
+    const SVG_WHATSAPP = svgIcon('message-circle');
 
     const esc = (v) => (window.PortalShare ? window.PortalShare.escapeHtml(v) : String(v == null ? '' : v));
 
@@ -309,12 +373,12 @@
             case 'categories':
                 state.currentTitle = 'جميع الأقسام';
                 main.innerHTML = renderCategoriesPage();
-                bindCategoryEvents();
                 break;
             case 'surgery-guide':
                 state.currentTitle = 'دليل ما قبل وبعد الجراحة';
                 main.innerHTML = renderSurgeryGuidePage();
                 bindSectionToggles();
+                bindQuickNav();
                 bindFAQToggles();
                 openRequestedSection(main, false);
                 break;
@@ -342,6 +406,10 @@
                 }
                 break;
         }
+        wrapTables(main);
+        renderTopBar(page);
+        // Topic pages carry their own "send this page" bar instead of the bottom navigation.
+        document.body.classList.toggle('has-cta', !!main.querySelector('.cta-bar'));
     }
 
     // Opens the section a shared link asked for (#...&section=3) and scrolls to
@@ -386,33 +454,112 @@
         return all.find(c => c.id === id);
     }
 
+    // A table wider than the phone scrolls sideways inside its own box instead
+    // of being cut off by the card around it. Most tables in the text files
+    // already sit in .responsive-table; this covers the ones that do not.
+    function wrapTables(root) {
+        root.querySelectorAll('table').forEach(table => {
+            if (table.parentElement.classList.contains('responsive-table')) return;
+            const box = document.createElement('div');
+            box.className = 'responsive-table';
+            table.parentNode.insertBefore(box, table);
+            box.appendChild(table);
+        });
+    }
+
+    // ---- Shared page parts ----
+    // Round badge, title, English name and one line, centred at the top of a page.
+    function pageHero(o) {
+        return `
+            <section class="hero g-${o.group}">
+                <div class="hero-art">${o.number ? `<span class="hero-num">${o.number}</span>` : svgIcon(o.icon)}</div>
+                <h1>${o.title}</h1>
+                ${o.en ? `<p class="hero-en">${o.en}</p>` : ''}
+                ${o.desc ? `<p class="hero-desc">${o.desc}</p>` : ''}
+            </section>
+        `;
+    }
+
+    // Fixed bar at the bottom of a topic: send it on WhatsApp, or share another way.
+    // It takes the place of the bottom navigation on that page.
+    function renderCtaBar(page, title, subtitle, label, section) {
+        const attrs = shareAttrs(page, title, subtitle, section);
+        return `
+            <div class="cta-space"></div>
+            <div class="cta-bar">
+                <button type="button" class="cta-main" data-share="whatsapp"${attrs}>${svgIcon('message-circle')}<span>${label || 'أرسل الصفحة عبر واتساب'}</span></button>
+                <button type="button" class="ibtn ibtn-tint cta-alt" data-share="sheet"${attrs} aria-label="مشاركة">${svgIcon('share-2')}</button>
+            </div>
+        `;
+    }
+
+    // ---- Top bar ----
+    // Home: search, the portal's name, QR codes. Every other page: back, where
+    // you are, share this page.
+    function renderTopBar(page) {
+        const bar = $('#topBar');
+        if (page === 'home') {
+            bar.innerHTML = `
+                <button type="button" class="ibtn" id="searchBtn" aria-label="بحث">${svgIcon('search')}</button>
+                <div class="top-mid"><span class="brand" id="headerTitle">${svgIcon('bone')}<span>بوابة تثقيف الأسرة</span></span></div>
+                <button type="button" class="ibtn ibtn-tint" data-go="qr-codes" aria-label="رموز QR للطباعة">${svgIcon('qr-code')}</button>
+            `;
+            return;
+        }
+        const fixed = {
+            'categories': { icon: 'layout-grid', label: 'الأقسام' },
+            'procedures-guide': { icon: 'clipboard-list', label: 'دليل العمليات' },
+            'qr-codes': { icon: 'qr-code', label: 'رموز QR' }
+        };
+        const g = topicGroup(page);
+        let crumb = fixed[page] || { icon: g.icon, label: page === 'surgery-guide' ? 'دليل الجراحة' : g.name };
+        let back = 'home';
+        let share = '';
+        // One procedure: back goes to the list, share sends just this procedure.
+        if (page === 'procedures-guide' && state.openProcedure !== null) {
+            const section = window.proceduresGuideData.sections[state.openProcedure];
+            crumb = { icon: 'clipboard-list', label: `العملية ${splitTitle(section.title).n || state.openProcedure}` };
+            back = 'procedures-guide';
+            share = shareAttrs('procedures-guide', `تعليمات ما بعد العمليات الجراحية - ${section.title}`, '', state.openProcedure);
+        }
+        bar.innerHTML = `
+            <button type="button" class="ibtn" data-go="${back}" aria-label="رجوع">${svgIcon('chevron-right')}</button>
+            <div class="top-mid"><span class="crumb">${svgIcon(crumb.icon)}<span>${crumb.label}</span></span></div>
+            <button type="button" class="ibtn ibtn-tint share-btn" id="shareBtn" data-share="sheet"${share} aria-label="مشاركة هذه الصفحة" title="مشاركة">${svgIcon('share-2')}</button>
+        `;
+    }
+
     // ---- Home Page ----
     function renderHomePage() {
-        const neuro = window.conditionsNeuro || [];
-        const skeletal = window.conditionsSkeletal || [];
-        const hip = window.conditionsHip || [];
-        const fractures = window.conditionsFractures || [];
-
+        const procCount = ((window.proceduresGuideData || {}).sections || []).filter(s => s.type !== 'guide-index').length;
         return `
-            <div class="hero-section">
-                <div class="hero-content">
-                    <h1>بوابة تثقيف الأسرة</h1>
-                    <p class="hero-hospital">وحدة جراحة عظام الأطفال</p>
-                    <p>دليلكم الشامل لفهم حالات عظام الأطفال وعلاجاتها الجراحية وغير الجراحية</p>
-                    <div class="hero-badge">
-                        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>
-                        محتوى طبي تعليمي موثوق
-                    </div>
-                </div>
+            <section class="hello">
+                <h1>كل ما تحتاجونه عن حالة طفلكم</h1>
+                <p>شرح واضح بالعربية من وحدة جراحة عظام الأطفال</p>
+            </section>
+
+            <div class="pills" role="group" aria-label="عرض المواضيع حسب المجموعة">
+                <button type="button" class="pill on" data-filter="all" aria-pressed="true"><span class="pill-ic">${svgIcon('layout-grid')}</span><span>الكل</span></button>
+                ${GROUPS.map(g => `
+                    <button type="button" class="pill g-${g.key}" data-filter="${g.key}" aria-pressed="false"><span class="pill-ic">${svgIcon(g.icon)}</span><span>${g.name}</span></button>
+                `).join('')}
             </div>
 
-            <div class="disclaimer-banner">
-                <div class="disc-icon">⚕️</div>
-                <p><strong>تنبيه مهم:</strong> هذا المحتوى للأغراض التعليمية فقط ولا يُغني عن استشارة الطبيب المختص. استشر طبيب طفلك دائماً قبل اتخاذ أي قرارات علاجية.</p>
+            <a href="#" class="feature" data-go="procedures-guide">
+                <span class="feature-art">${svgIcon('clipboard-list')}</span>
+                <span class="feature-body">
+                    <span class="feature-title">تعليمات ما بعد العمليات</span>
+                    <span class="feature-sub">${procCount} ${arCount(procCount, WORDS.procedure)}، لكل منها تعليمات الجبس والأدوية والمتابعة</span>
+                </span>
+                <span class="feature-go">${svgIcon('chevron-left')}</span>
+            </a>
+
+            <h2 class="list-h">المواضيع</h2>
+            <div class="cards" id="topicCards">
+                ${GROUPS.map(g => g.items().map(c => renderTopicCard(c, g)).join('')).join('')}
             </div>
 
             <div class="share-banner">
-                <div class="share-banner-icon">💬</div>
                 <div class="share-banner-text">
                     <strong>شارك البوابة مع أسرتك</strong>
                     <p>أرسل الرابط للأم أو الأب أو الجدّة أو من يعتني بالطفل، ليطّلعوا على نفس المعلومات في أي وقت.</p>
@@ -420,328 +567,133 @@
                 ${renderShareRow('home', 'بوابة تثقيف الأسرة - وحدة جراحة عظام الأطفال', 'دليلكم الشامل لفهم حالات عظام الأطفال وعلاجاتها')}
             </div>
 
-            <div class="section-container">
-                <div class="section-title">
-                    <div class="title-icon cat-neuro">🧠</div>
-                    الحالات العصبية والعضلية
-                </div>
-                <div class="categories-grid">
-                    ${neuro.map(c => renderCategoryCard(c, 'cat-neuro')).join('')}
-                </div>
-            </div>
-
-            <div class="section-container">
-                <div class="section-title">
-                    <div class="title-icon cat-bone">🦴</div>
-                    أمراض العظام والمفاصل
-                </div>
-                <div class="categories-grid">
-                    ${skeletal.map(c => renderCategoryCard(c, 'cat-bone')).join('')}
-                </div>
-            </div>
-
-            <div class="section-container">
-                <div class="section-title">
-                    <div class="title-icon cat-hip">🏃</div>
-                    أمراض الورك والمشي
-                </div>
-                <div class="categories-grid">
-                    ${hip.map(c => renderCategoryCard(c, 'cat-hip')).join('')}
-                </div>
-            </div>
-
-            <div class="section-container">
-                <div class="section-title">
-                    <div class="title-icon cat-fracture">🩹</div>
-                    الكسور
-                </div>
-                <div class="categories-grid">
-                    ${fractures.map(c => renderCategoryCard(c, 'cat-fracture')).join('')}
-                </div>
-            </div>
-
-            <div class="section-container">
-                <div class="section-title">
-                    <div class="title-icon cat-surgery">📋</div>
-                    أدلة مهمة
-                </div>
-                <div class="categories-grid">
-                    <div class="category-card" data-page="surgery-guide">
-                        <div class="category-icon cat-surgery">🏥</div>
-                        <h3>دليل ما قبل وبعد الجراحة</h3>
-                        <p>تعليمات شاملة</p>
-                    </div>
-                    <div class="category-card" data-page="procedures-guide">
-                        <div class="category-icon cat-surgery">🔪</div>
-                        <h3>تعليمات ما بعد العمليات</h3>
-                        <p>حسب نوع العملية</p>
-                    </div>
-                    <div class="category-card" data-page="cast-care">
-                        <div class="category-icon cat-surgery">🦴</div>
-                        <h3>العناية بالجبيرة</h3>
-                        <p>بعد الجراحة</p>
-                    </div>
-                    <div class="category-card" data-page="spica-cast-care">
-                        <div class="category-icon cat-hip">👶</div>
-                        <h3>الجبيرة الحوضية</h3>
-                        <p>دليل العناية الشامل</p>
-                    </div>
-                    <div class="category-card" data-page="silicone-gel">
-                        <div class="category-icon cat-surgery">🩹</div>
-                        <h3>جل السيليكون للندبات</h3>
-                        <p>وقاية وعلاج</p>
-                    </div>
-                    <div class="category-card" data-page="qr-codes">
-                        <div class="category-icon cat-surgery">📱</div>
-                        <h3>رموز QR للطباعة</h3>
-                        <p>سهولة الوصول</p>
-                    </div>
-                </div>
-            </div>
+            <p class="disclaimer-note">${svgIcon('info')}<span><strong>تنبيه مهم:</strong> هذا المحتوى للأغراض التعليمية فقط ولا يُغني عن استشارة الطبيب المختص. استشر طبيب طفلك دائماً قبل اتخاذ أي قرارات علاجية.</span></p>
         `;
     }
 
-    function renderCategoryCard(condition, colorClass) {
+    function renderTopicCard(c, g) {
+        const sections = c.sections || [];
+        const hasVideo = sections.some(s => s.type === 'video');
         return `
-            <div class="category-card" data-page="${condition.id}">
-                <div class="category-icon ${colorClass}">${condition.icon}</div>
-                <h3>${condition.name}</h3>
-                <p>${condition.shortDesc || ''}</p>
-            </div>
+            <a href="#" class="ccard g-${g.key}" data-go="${c.id}" data-group="${g.key}">
+                <span class="ccard-tag">${svgIcon(c.id === 'surgery-guide' ? 'stethoscope' : g.icon)}</span>
+                <span class="ccard-title">${c.name}</span>
+                ${c.englishName ? `<span class="ccard-en">${c.englishName}</span>` : ''}
+                <span class="ccard-meta">${sections.length} ${arCount(sections.length, WORDS.section)}${hasVideo ? `<span class="badge-video">${svgIcon('play')}فيديو</span>` : ''}</span>
+            </a>
         `;
     }
 
+    // Group buttons above the topics show one group at a time.
     function bindHomeEvents() {
-        $$('.category-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const page = card.dataset.page;
-                if (page) navigateTo(page);
+        $$('.pill[data-filter]').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const filter = pill.dataset.filter;
+                $$('.pill[data-filter]').forEach(p => {
+                    p.classList.toggle('on', p === pill);
+                    p.setAttribute('aria-pressed', String(p === pill));
+                });
+                $$('#topicCards .ccard').forEach(card => {
+                    card.hidden = filter !== 'all' && card.dataset.group !== filter;
+                });
             });
         });
     }
 
     // ---- Categories Page ----
     function renderCategoriesPage() {
-        const groups = [
-            { title: '🧠 الحالات العصبية والعضلية', items: window.conditionsNeuro || [], color: 'cat-neuro' },
-            { title: '🦴 أمراض العظام والمفاصل', items: window.conditionsSkeletal || [], color: 'cat-bone' },
-            { title: '🏃 أمراض الورك والمشي', items: window.conditionsHip || [], color: 'cat-hip' },
-            { title: '🩹 الكسور', items: window.conditionsFractures || [], color: 'cat-fracture' }
-        ];
-
-        return `
-            <div class="condition-header" style="background: linear-gradient(135deg, #0e7490, #155e75);">
-                <h1>جميع الأقسام</h1>
-                <p class="subtitle">تصفح جميع الحالات والمواضيع المتاحة</p>
-                ${renderShareRow('categories', 'جميع الأقسام - بوابة تثقيف الأسرة', 'تصفح جميع الحالات والمواضيع المتاحة')}
-            </div>
-            <div class="section-container categories-page">
-                ${groups.map(g => `
-                    <div class="category-group">
-                        <div class="group-title">${g.title}</div>
-                        ${g.items.map(c => `
-                            <div class="condition-list-card" data-page="${c.id}">
-                                <div class="card-icon ${g.color}">${c.icon}</div>
-                                <div class="card-info">
-                                    <h3>${c.name}</h3>
-                                    <p>${c.shortDesc || ''}</p>
-                                </div>
-                                <div class="card-arrow">◀</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('')}
-
-                <div class="category-group">
-                    <div class="group-title">📋 أدلة الجراحة والعناية</div>
-                    <div class="condition-list-card" data-page="surgery-guide">
-                        <div class="card-icon cat-surgery">🏥</div>
-                        <div class="card-info">
-                            <h3>دليل ما قبل وبعد الجراحة</h3>
-                            <p>تعليمات شاملة للتحضير للعمليات والعناية بعدها</p>
-                        </div>
-                        <div class="card-arrow">◀</div>
-                    </div>
-                    <div class="condition-list-card" data-page="procedures-guide">
-                        <div class="card-icon cat-surgery">🔪</div>
-                        <div class="card-info">
-                            <h3>تعليمات ما بعد العمليات الجراحية</h3>
-                            <p>تعليمات مفصّلة لكل عملية: الورك، الفخذ، الركبة، القدم والحالات العصبية</p>
-                        </div>
-                        <div class="card-arrow">◀</div>
-                    </div>
-                    <div class="condition-list-card" data-page="cast-care">
-                        <div class="card-icon cat-surgery">🦴</div>
-                        <div class="card-info">
-                            <h3>العناية بالجبيرة بعد الجراحة</h3>
-                            <p>تعليمات العناية بالجبيرة وعلامات الخطر والحياة اليومية</p>
-                        </div>
-                        <div class="card-arrow">◀</div>
-                    </div>
-                    <div class="condition-list-card" data-page="spica-cast-care">
-                        <div class="card-icon cat-hip">👶</div>
-                        <div class="card-info">
-                            <h3>العناية بالجبيرة الحوضية (البنطلونية)</h3>
-                            <p>دليل شامل للعناية بالطفل في الجبيرة الحوضية بعد عملية خلع الورك</p>
-                        </div>
-                        <div class="card-arrow">◀</div>
-                    </div>
-                    <div class="condition-list-card" data-page="silicone-gel">
-                        <div class="card-icon cat-surgery">🩹</div>
-                        <div class="card-info">
-                            <h3>جل السيليكون للوقاية من الندبات</h3>
-                            <p>دليل شامل للوالدين حول استخدام جل ولصقات السيليكون بعد التئام الجروح</p>
-                        </div>
-                        <div class="card-arrow">◀</div>
-                    </div>
-                </div>
-            </div>
+        const row = (c, icon) => `
+            <a href="#" class="prow" data-go="${c.id}">
+                <span class="prow-n">${svgIcon(icon)}</span>
+                <span class="prow-body">
+                    <span class="prow-title">${c.name}</span>
+                    ${c.englishName ? `<span class="prow-en">${c.englishName}</span>` : ''}
+                </span>
+                <span class="prow-go">${svgIcon('chevron-left')}</span>
+            </a>
         `;
-    }
-
-    function bindCategoryEvents() {
-        $$('.condition-list-card').forEach(card => {
-            card.addEventListener('click', () => {
-                navigateTo(card.dataset.page);
-            });
-        });
+        return `
+            ${pageHero({ group: 'care', icon: 'layout-grid', title: 'جميع الأقسام', desc: 'تصفح جميع الحالات والمواضيع المتاحة' })}
+            ${GROUPS.map(g => `
+                <section class="topic-group g-${g.key}">
+                    <h2 class="group-h"><span class="group-dot">${svgIcon(g.icon)}</span>${g.name}</h2>
+                    <div class="plist">
+                        ${g.items().map(c => row(c, c.id === 'surgery-guide' ? 'stethoscope' : g.icon)).join('')}
+                        ${g.key === 'care' ? row({ id: 'procedures-guide', name: 'تعليمات ما بعد العمليات', englishName: 'Post-op Instructions' }, 'clipboard-list') : ''}
+                    </div>
+                </section>
+            `).join('')}
+        `;
     }
 
     // ---- Condition Page ----
     function renderConditionPage(condition) {
         const sections = condition.sections || [];
-        const quickNavTabs = sections.map((s, i) => `
-            <button class="quick-nav-tab${i === 0 ? ' active' : ''}" data-section="section-${i}">${s.title}</button>
-        `).join('');
-
+        const g = topicGroup(condition.id);
+        const html = sections.map(s => s.content).join(' ');
+        const facts = [
+            ['list-checks', sections.length, WORDS.section],
+            ['circle-help', (html.match(/class="faq-item"/g) || []).length, WORDS.faq],
+            ['link-2', (html.match(/data-goto="procedures-guide"/g) || []).length, WORDS.link],
+            ['images', (html.match(/<img\b/g) || []).length, WORDS.figure]
+        ].filter(f => f[1] > 0);
         const shareCtx = {
             page: condition.id,
             title: condition.name,
             subtitle: condition.shortDesc || ''
         };
-        const sectionsHtml = sections.map((s, i) => renderSection(s, i, shareCtx)).join('');
 
         return `
-            <div class="condition-header">
-                <div class="breadcrumb">
-                    <a href="#" data-nav="home">الرئيسية</a>
-                    <span>›</span>
-                    <span>${condition.name}</span>
-                </div>
-                <h1>${condition.name}</h1>
-                ${condition.englishName ? `<p class="subtitle">${condition.englishName}</p>` : ''}
-                ${condition.badges ? `
-                    <div class="condition-badges">
-                        ${condition.badges.map(b => `<span class="condition-badge">${b}</span>`).join('')}
-                    </div>
-                ` : ''}
-                ${renderShareRow(condition.id, condition.name, condition.shortDesc || '')}
+            ${pageHero({ group: g.key, icon: g.icon, title: condition.name, en: condition.englishName, desc: condition.shortDesc })}
+            <div class="facts">
+                ${facts.map(([icon, n, words]) => `<div class="fact">${svgIcon(icon)}<b>${n}</b><span>${arCount(n, words)}</span></div>`).join('')}
             </div>
-
             <div class="quick-nav">
                 <div class="quick-nav-inner">
-                    ${quickNavTabs}
+                    ${sections.map((s, i) => `<button type="button" class="quick-nav-tab${i === 0 ? ' active' : ''}" data-section="section-${i}">${s.title}</button>`).join('')}
                 </div>
             </div>
-
             <div class="condition-content">
-                ${sectionsHtml}
+                ${sections.map((s, i) => renderSection(s, i, shareCtx)).join('')}
             </div>
+            ${renderCtaBar(condition.id, condition.name, condition.shortDesc || '')}
         `;
     }
 
+    const SECTION_ICONS = {
+        'overview': 'book-open', 'causes': 'dna', 'symptoms': 'stethoscope', 'diagnosis': 'scan-search',
+        'conservative': 'pill', 'surgical': 'scissors', 'pre-surgery': 'clipboard-list', 'post-surgery': 'bed',
+        'rehab': 'dumbbell', 'emergency': 'siren', 'faq': 'circle-help', 'home-care': 'house-plus',
+        'when-to-see-doctor': 'triangle-alert', 'video': 'play', 'warning-signs': 'triangle-alert', 'warning': 'triangle-alert',
+        'types': 'layers', 'classification': 'layers', 'care': 'heart-handshake', 'daily': 'sun', 'daily-care': 'sun',
+        'recovery': 'heart-pulse', 'diaper': 'baby', 'diaper-care': 'baby', 'positions': 'bed', 'positioning': 'bed',
+        'mobility': 'accessibility', 'after-removal': 'bandage', 'post-removal': 'bandage', 'timing': 'clock',
+        'instructions': 'list-checks', 'dodont': 'circle-check', 'vitaminc': 'citrus', 'sideeffects': 'triangle-alert',
+        'summary': 'target', 'remodeling': 'refresh-cw', 'guide-index': 'list',
+        'proc-hip': 'bone', 'proc-femur': 'bone', 'proc-neuro': 'brain', 'proc-foot': 'footprints', 'proc-knee': 'bone'
+    };
+    // Sections about danger signs get the alert colour.
+    const ALERT_SECTIONS = ['emergency', 'warning-signs', 'warning', 'when-to-see-doctor', 'sideeffects'];
+
     function renderSection(section, index, shareCtx) {
-        const iconColors = {
-            'overview': '#dbeafe',
-            'causes': '#fce7f3',
-            'symptoms': '#fef3c7',
-            'diagnosis': '#e0e7ff',
-            'conservative': '#d1fae5',
-            'surgical': '#ede9fe',
-            'pre-surgery': '#cffafe',
-            'post-surgery': '#d1fae5',
-            'rehab': '#fef3c7',
-            'emergency': '#fee2e2',
-            'faq': '#f0f9ff',
-            'timing': '#cffafe',
-            'instructions': '#dbeafe',
-            'dodont': '#fef3c7',
-            'vitaminc': '#d1fae5',
-            'sideeffects': '#fee2e2',
-            'summary': '#ede9fe',
-            'types': '#fce7f3',
-            'classification': '#fce7f3',
-            'daily-care': '#d1fae5',
-            'diaper-care': '#fef3c7',
-            'positioning': '#cffafe',
-            'mobility': '#dbeafe',
-            'warning-signs': '#fee2e2',
-            'home-care': '#d1fae5',
-            'post-removal': '#ede9fe',
-            'remodeling': '#ecfdf5',
-            'guide-index': '#e0e7ff',
-            'proc-hip': '#ede9fe',
-            'proc-femur': '#cffafe',
-            'proc-neuro': '#fce7f3',
-            'proc-foot': '#d1fae5',
-            'proc-knee': '#fef3c7',
-            'video': '#e0f2fe'
-        };
-
-        const sectionIcons = {
-            'overview': '📖',
-            'causes': '🔬',
-            'symptoms': '🩺',
-            'diagnosis': '🔍',
-            'conservative': '💊',
-            'surgical': '🔪',
-            'pre-surgery': '📋',
-            'post-surgery': '🏥',
-            'rehab': '🏋️',
-            'emergency': '🚨',
-            'faq': '❓',
-            'types': '📊',
-            'classification': '📊',
-            'timing': '⏱️',
-            'instructions': '📝',
-            'dodont': '✅',
-            'vitaminc': '💊',
-            'sideeffects': '⚠️',
-            'summary': '🎯',
-            'daily-care': '🧴',
-            'diaper-care': '👶',
-            'positioning': '🛏️',
-            'mobility': '🚶',
-            'warning-signs': '🚨',
-            'home-care': '🏠',
-            'post-removal': '🔓',
-            'remodeling': '🦴',
-            'guide-index': '🗂️',
-            'proc-hip': '🦴',
-            'proc-femur': '🦵',
-            'proc-neuro': '🧠',
-            'proc-foot': '🦶',
-            'proc-knee': '🦵',
-            'video': '🎬'
-        };
-
-        const bgColor = iconColors[section.type] || '#f0f9ff';
-        const icon = sectionIcons[section.type] || '📄';
-
+        const alert = ALERT_SECTIONS.includes(section.type);
         return `
             <div class="content-section" id="section-${index}">
                 <div class="section-header" data-target="section-body-${index}">
-                    <div class="section-icon" style="background: ${bgColor}">${icon}</div>
+                    <span class="section-icon${alert ? ' is-alert' : ''}">${svgIcon(SECTION_ICONS[section.type] || 'book-open')}</span>
                     <h2>${section.title}</h2>
                     ${renderSectionShareBtn(shareCtx, section, index)}
-                    <svg class="toggle-icon" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" fill="currentColor"/></svg>
+                    <span class="toggle-icon">${svgIcon('chevron-down')}</span>
                 </div>
                 <div class="section-body" id="section-body-${index}">
-                    ${section.content}
+                    ${tidyContent(section.content)}
                 </div>
             </div>
         `;
     }
+
+    // Content text as shown on a page: emoji become line icons (js/content.js).
+    const tidyContent = (html) => window.PortalContent.tidy(html);
 
     function bindSectionToggles() {
         $$('.section-header').forEach(header => {
@@ -796,52 +748,66 @@
 
     // ---- Surgery Guide Page ----
     function renderSurgeryGuidePage() {
-        const guide = window.surgeryGuideData || {};
-        const guideShareCtx = {
-            page: 'surgery-guide',
-            title: 'دليل ما قبل وبعد الجراحة',
-            subtitle: 'تعليمات شاملة للتحضير للعمليات الجراحية والعناية بعدها'
-        };
-        return `
-            <div class="condition-header" style="background: linear-gradient(135deg, #059669, #047857);">
-                <div class="breadcrumb">
-                    <a href="#" data-nav="home">الرئيسية</a>
-                    <span>›</span>
-                    <span>دليل الجراحة</span>
-                </div>
-                <h1>دليل ما قبل وبعد الجراحة</h1>
-                <p class="subtitle">كل ما تحتاج معرفته للتحضير لعملية طفلك والعناية به بعدها</p>
-                ${renderShareRow('surgery-guide', 'دليل ما قبل وبعد الجراحة', 'تعليمات شاملة للتحضير للعمليات الجراحية والعناية بعدها')}
-            </div>
-            <div class="condition-content">
-                ${(guide.sections || []).map((s, i) => renderSection(s, i, guideShareCtx)).join('')}
-            </div>
-        `;
+        return renderConditionPage(Object.assign(surgeryGuideTopic(), {
+            shortDesc: 'كل ما تحتاج معرفته للتحضير لعملية طفلك والعناية به بعدها'
+        }));
     }
 
     // ---- Procedure-Specific Post-Op Guide Page ----
+    // The list of procedures; choosing one, or arriving from its QR code or a
+    // shared link (&section=N), shows that procedure on its own screen.
     function renderProceduresGuidePage() {
-        const guide = window.proceduresGuideData || {};
+        const all = (window.proceduresGuideData || {}).sections || [];
+        const requested = parseInt(state.pendingSection, 10);
+        if (all[requested] && all[requested].type !== 'guide-index') {
+            state.pendingSection = null;
+            state.openProcedure = requested;
+            return renderProcedure(all[requested], requested);
+        }
+        state.openProcedure = null;
         const shareCtx = {
             page: 'procedures-guide',
             title: 'تعليمات ما بعد العمليات الجراحية',
             subtitle: 'اختر عملية طفلك واقرأ تعليماتها الخاصة'
         };
+        const howTo = all.findIndex(s => s.type === 'guide-index');
         return `
-            <div class="condition-header" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">
-                <div class="breadcrumb">
-                    <a href="#" data-nav="home">الرئيسية</a>
-                    <span>›</span>
-                    <span>تعليمات ما بعد العمليات</span>
-                </div>
-                <h1>تعليمات ما بعد العمليات الجراحية</h1>
-                <p class="subtitle">اختر اسم عملية طفلك: شرح العملية، الإقامة، الأدوية، الجبيرة، المتابعة، التأهيل والأجهزة</p>
-                ${renderShareRow('procedures-guide', 'تعليمات ما بعد العمليات الجراحية', 'تعليمات مفصّلة لكل عملية على حدة')}
+            ${pageHero({ group: 'care', icon: 'clipboard-list', title: 'تعليمات ما بعد العمليات', desc: 'اختاروا عملية طفلكم: الجبس، والأدوية، والمتابعة، والتأهيل' })}
+            <div class="plist">
+                ${all.map((s, i) => {
+                    if (s.type === 'guide-index') return '';
+                    const t = splitTitle(s.title);
+                    return `
+                        <a href="#" class="prow" data-procedure="${i}">
+                            <span class="prow-n">${t.n}</span>
+                            <span class="prow-body">
+                                <span class="prow-title">${t.ar}</span>
+                                ${t.en ? `<span class="prow-en">${t.en}</span>` : ''}
+                            </span>
+                            <span class="prow-go">${svgIcon('chevron-left')}</span>
+                        </a>
+                    `;
+                }).join('')}
             </div>
-            <div class="condition-content">
-                ${(guide.sections || []).map((s, i) => renderSection(s, i, shareCtx)).join('')}
-            </div>
+            ${howTo >= 0 ? `<div class="condition-content guide-help">${renderSection(all[howTo], howTo, shareCtx)}</div>` : ''}
         `;
+    }
+
+    function renderProcedure(section, index) {
+        const t = splitTitle(section.title);
+        return `
+            <div class="procedure" id="section-${index}">
+                ${pageHero({ group: 'care', number: t.n || String(index), title: t.ar, en: t.en })}
+                <div class="section-body open single">${tidyContent(section.content)}</div>
+            </div>
+            ${renderCtaBar('procedures-guide', `تعليمات ما بعد العمليات الجراحية - ${section.title}`, '', 'أرسلها عبر واتساب', index)}
+        `;
+    }
+
+    // "6. Arabic name (English name)" -> { n: '6', ar: 'Arabic name', en: 'English name' }
+    function splitTitle(title) {
+        const m = /^(\d+)\.\s*(.*?)\s*\(([^()]*)\)\s*$/.exec(title);
+        return m ? { n: m[1], ar: m[2], en: m[3] } : { n: '', ar: title, en: '' };
     }
 
     // ---- QR Code Page ----
@@ -861,13 +827,13 @@
         const sub = m ? m[2] : '';
         return `
             <div class="qr-card" data-condition-id="${esc(o.id)}">
-                <h3>${o.icon ? o.icon + ' ' : ''}${esc(head)}${sub ? `<span class="qr-en">${esc(sub)}</span>` : ''}</h3>
+                <h3>${esc(head)}${sub ? `<span class="qr-en">${esc(sub)}</span>` : ''}</h3>
                 <canvas class="qr-canvas" data-page="${esc(o.id)}"${sectionAttr}></canvas>
                 <div class="qr-actions">
-                    <button class="btn btn-sm btn-primary qr-print" data-id="${esc(o.id)}">🖨️ طباعة</button>
+                    <button type="button" class="btn btn-sm btn-primary qr-print" data-id="${esc(o.id)}">${svgIcon('printer')}طباعة</button>
                     <button type="button" class="btn btn-sm btn-share" data-share="sheet"
                             data-share-page="${esc(o.id)}"${shareSection} data-share-title="${esc(o.title)}"
-                            data-share-subtitle="${esc(o.subtitle || '')}">🔗 مشاركة</button>
+                            data-share-subtitle="${esc(o.subtitle || '')}">${svgIcon('share-2')}مشاركة</button>
                 </div>
             </div>
         `;
@@ -884,6 +850,15 @@
             })).join('');
     }
 
+    // The ready-made print packs next to index.html (built by tools/qr).
+    const QR_PDFS = [
+        ['QR-All-Topics.pdf', 'جميع المواضيع - صفحتان'],
+        ['QR-Individual-Topics.pdf', 'صفحة لكل موضوع'],
+        ['QR-Clinic-Poster.pdf', 'ملصق العيادة (Poster)'],
+        ['QR-Clinic-Cards.pdf', 'بطاقات العيادة'],
+        ['QR-Clinic-Table-Card.pdf', 'بطاقة طاولة العيادة - وجهان']
+    ];
+
     function renderQRPage() {
         const allConditions = getAllConditions();
         const procedureCards = guideSectionCards(
@@ -894,61 +869,61 @@
             'دليل ما قبل وبعد الجراحة - بوابة تثقيف الأسرة');
 
         return `
-            <div class="condition-header" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">
-                <h1>رموز QR للطباعة</h1>
-                <p class="subtitle">امسح الرمز بكاميرا هاتفك للوصول المباشر لكل موضوع</p>
+            ${pageHero({ group: 'care', icon: 'qr-code', title: 'رموز QR للطباعة', desc: 'امسح الرمز بكاميرا هاتفك للوصول المباشر لكل موضوع' })}
+            <div class="info-box tip">
+                <div class="info-box-icon">${svgIcon('lightbulb')}</div>
+                <div class="info-box-content">
+                    <strong>كيفية الاستخدام</strong>
+                    <p>اطبع هذه الرموز وضعها في العيادة أو غرف الانتظار ليتمكن المرضى وأسرهم من الوصول للمعلومات بسهولة عبر هواتفهم. كل رمز يفتح موضوعه مباشرةً.</p>
+                </div>
             </div>
-            <div class="section-container">
-                <div class="info-box tip">
-                    <div class="info-box-icon">💡</div>
-                    <div class="info-box-content">
-                        <strong>كيفية الاستخدام</strong>
-                        <p>اطبع هذه الرموز وضعها في العيادة أو غرف الانتظار ليتمكن المرضى وأسرهم من الوصول للمعلومات بسهولة عبر هواتفهم. كل رمز يفتح موضوعه مباشرةً.</p>
-                    </div>
+
+            <section class="topic-group g-care">
+                <h2 class="group-h"><span class="group-dot">${svgIcon('download')}</span>حزم PDF جاهزة للطباعة</h2>
+                <p class="group-note">اضغط للتحميل ثم الطباعة مباشرةً للعيادة أو لمشاركة المرضى.</p>
+                <div class="plist">
+                    ${QR_PDFS.map(([file, name]) => `
+                        <a class="prow" href="${file}" download>
+                            <span class="prow-n">${svgIcon('file-text')}</span>
+                            <span class="prow-body">
+                                <span class="prow-title">${name}</span>
+                                <span class="prow-en">${file}</span>
+                            </span>
+                            <span class="prow-go">${svgIcon('download')}</span>
+                        </a>
+                    `).join('')}
                 </div>
-                <div class="info-box success" style="margin-bottom: 1.5rem;">
-                    <div class="info-box-icon">📥</div>
-                    <div class="info-box-content">
-                        <strong>حزم PDF جاهزة للطباعة</strong>
-                        <p style="margin-bottom: 0.75rem;">هذه ملفات PDF جاهزة - اضغط للتحميل ثم الطباعة مباشرةً للعيادة أو لمشاركة المرضى:</p>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                            <a href="QR-All-Topics.pdf" download class="btn btn-sm btn-primary">📄 جميع المواضيع - صفحتان</a>
-                            <a href="QR-Individual-Topics.pdf" download class="btn btn-sm btn-primary">📚 صفحة لكل موضوع</a>
-                            <a href="QR-Clinic-Poster.pdf" download class="btn btn-sm btn-primary">🪧 ملصق العيادة (Poster)</a>
-                            <a href="QR-Clinic-Cards.pdf" download class="btn btn-sm btn-primary">🃏 بطاقات العيادة</a>
-                            <a href="QR-Clinic-Table-Card.pdf" download class="btn btn-sm btn-primary">📇 بطاقة طاولة العيادة - وجهان</a>
-                        </div>
-                    </div>
-                </div>
+            </section>
+
+            <section class="topic-group g-care">
+                <h2 class="group-h"><span class="group-dot">${svgIcon('qr-code')}</span>رمز لكل موضوع</h2>
                 <div class="qr-grid" id="qrGrid">
                     ${allConditions.map(c => renderQRCard({
-                        id: c.id, icon: c.icon, title: c.name, subtitle: c.shortDesc || ''
+                        id: c.id, title: c.name, subtitle: c.shortDesc || ''
                     })).join('')}
                 </div>
+            </section>
 
-                ${procedureCards ? `
-                <div class="section-title">
-                    <div class="title-icon cat-surgery">🔪</div>
-                    رمز لكل عملية على حدة
-                </div>
+            ${procedureCards ? `
+            <section class="topic-group g-care">
+                <h2 class="group-h"><span class="group-dot">${svgIcon('clipboard-list')}</span>رمز لكل عملية على حدة</h2>
                 <div class="info-box">
-                    <div class="info-box-icon">📩</div>
+                    <div class="info-box-icon">${svgIcon('send')}</div>
                     <div class="info-box-content">
                         <strong>أرسل تعليمات عملية واحدة فقط</strong>
                         <p>كل رمز هنا يفتح تعليمات عمليته مباشرةً دون أن يبحث الأهل داخل الدليل. اطبعه وأرفقه بورقة الخروج، أو اضغط «مشاركة» لإرساله عبر واتساب.</p>
                     </div>
                 </div>
                 <div class="qr-grid">${procedureCards}</div>
-                ` : ''}
+            </section>
+            ` : ''}
 
-                ${surgeryCards ? `
-                <div class="section-title">
-                    <div class="title-icon cat-surgery">📋</div>
-                    أقسام دليل ما قبل وبعد الجراحة
-                </div>
+            ${surgeryCards ? `
+            <section class="topic-group g-care">
+                <h2 class="group-h"><span class="group-dot">${svgIcon('stethoscope')}</span>أقسام دليل ما قبل وبعد الجراحة</h2>
                 <div class="qr-grid">${surgeryCards}</div>
-                ` : ''}
-            </div>
+            </section>
+            ` : ''}
         `;
     }
 
@@ -967,7 +942,7 @@
             canvasEl.width = size;
             canvasEl.height = size;
             canvasEl.style.borderRadius = '12px';
-            canvasEl.style.border = '2px solid #e2e8f0';
+            canvasEl.style.border = '2px solid #D8DEDC';
             canvasEl.dataset.url = url;
             canvasEl.dataset.page = page;
             canvasEl.className = 'qr-image';
@@ -997,7 +972,7 @@
         // Use QRCode matrix generation
         const qr = generateQRMatrix(text);
         if (!qr) {
-            ctx.fillStyle = '#ef4444';
+            ctx.fillStyle = '#A4553F';
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('QR Error', size / 2, size / 2);
@@ -1008,7 +983,7 @@
         const cellSize = (size - 20) / modules;
         const offset = 10;
 
-        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = '#263540';
         for (let r = 0; r < modules; r++) {
             for (let c = 0; c < modules; c++) {
                 if (qr[r][c]) {
@@ -1359,9 +1334,9 @@
                     img { border: 10px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
                     p { color: #666; margin-top: 20px; font-size: 14px; }
                     .url { font-size: 11px; color: #999; word-break: break-all; margin-top: 10px; direction: ltr; }
-                    .header { border-bottom: 3px solid #0891b2; padding-bottom: 20px; margin-bottom: 30px; }
-                    .header h2 { color: #0891b2; font-size: 18px; }
-                    .header h3 { color: #475569; font-size: 14px; font-weight: normal; }
+                    .header { border-bottom: 3px solid #2F6F68; padding-bottom: 20px; margin-bottom: 30px; }
+                    .header h2 { color: #2F6F68; font-size: 18px; }
+                    .header h3 { color: #5F6E78; font-size: 14px; font-weight: normal; }
                 </style>
             </head>
             <body>
