@@ -132,6 +132,7 @@ CATEGORIES = [
         {"id": "perthes",                 "name": "مرض بيرثيز",           "en": "Perthes Disease"},
         {"id": "scfe",                    "name": "انزلاق رأس الفخذ",     "en": "SCFE"},
         {"id": "toe-walking",             "name": "المشي على الأصابع",     "en": "Toe Walking"},
+        {"id": "in-toeing",               "name": "انحراف القدمين للداخل", "en": "In-toeing"},
         {"id": "arthrogryposis",          "name": "تيبّس المفاصل الخلقي",  "en": "Arthrogryposis"},
     ]},
     {"key": "fracture", "topics": [

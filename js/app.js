@@ -671,7 +671,8 @@
             'proc-femur': '#cffafe',
             'proc-neuro': '#fce7f3',
             'proc-foot': '#d1fae5',
-            'proc-knee': '#fef3c7'
+            'proc-knee': '#fef3c7',
+            'video': '#e0f2fe'
         };
 
         const sectionIcons = {
@@ -707,7 +708,8 @@
             'proc-femur': '🦵',
             'proc-neuro': '🧠',
             'proc-foot': '🦶',
-            'proc-knee': '🦵'
+            'proc-knee': '🦵',
+            'video': '🎬'
         };
 
         const bgColor = iconColors[section.type] || '#f0f9ff';

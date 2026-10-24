@@ -1061,6 +1061,20 @@ img { max-width: 100%; height: auto; }
     fill: var(--text-secondary);
 }
 
+/* ---- Video ---- */
+.video-container {
+    margin: 4px 0 8px;
+    text-align: center;
+}
+
+.video-container video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0f172a;
+    border-radius: var(--radius);
+}
+
 /* ---- FAQ ---- */
 .faq-item {
     border-bottom: 1px solid var(--border-light);
