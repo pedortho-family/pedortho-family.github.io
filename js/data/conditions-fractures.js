@@ -2280,7 +2280,7 @@ window.conditionsFractures = [
           </div>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/nursemaids-elbow/lift-safely.png"
+            <img class="figure-full" src="images/nursemaids-elbow/lift-safely.jpg"
                  alt="رسم توضيحي: لا ترفع الطفل أو تسحبه من يده، بل ارفعه من تحت الإبطين"
                  loading="lazy" />
             <div class="illustration-caption">الطريقة الآمنة لرفع الطفل الصغير: من تحت الإبطين، وليس من اليدين.</div>

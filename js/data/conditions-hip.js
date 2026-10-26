@@ -649,7 +649,7 @@ window.conditionsHip = [
           </div>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/transient-synovitis/hip-fluid.png"
+            <img class="figure-full" src="images/transient-synovitis/hip-fluid.jpg"
                  alt="رسم توضيحي لثلاثة مفاصل ورك: طبيعي بكمية قليلة من السائل، والتهاب عابر بسائل زائد دون عدوى، والتهاب صديدي بصديد وبكتيريا"
                  loading="lazy" />
             <div class="illustration-caption">الفرق داخل مفصل الورك بين الورك الطبيعي، والالتهاب العابر (سائل زائد دون عدوى)، والالتهاب الصديدي (صديد وبكتيريا).</div>
@@ -786,7 +786,7 @@ window.conditionsHip = [
           </div>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/transient-synovitis/hip-fluid.png"
+            <img class="figure-full" src="images/transient-synovitis/hip-fluid.jpg"
                  alt="رسم توضيحي لثلاثة مفاصل ورك: طبيعي، والتهاب عابر بسائل زائد، والتهاب صديدي بصديد وبكتيريا"
                  loading="lazy" />
             <div class="illustration-caption">في الالتهاب الصديدي يمتلئ المفصل بالصديد والبكتيريا، بخلاف الالتهاب العابر الذي يكون فيه سائل زائد دون عدوى.</div>
@@ -1455,7 +1455,7 @@ window.conditionsHip = [
           </div>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/bowed-legs-knock-knees/normal-development.png"
+            <img class="figure-full" src="images/bowed-legs-knock-knees/normal-development.jpg"
                  alt="رسم توضيحي لتطور شكل الساقين الطبيعي: تقوس للخارج من الولادة إلى سنة ونصف، واستقامة حوالي سنتين، وتقارب الركبتين من 3 إلى 4 سنوات، وشكل البالغين حوالي 7 سنوات"
                  loading="lazy" />
             <div class="illustration-caption">المسار الطبيعي لشكل الساقين: تقوس عند الصغار، ثم استقامة، ثم تقارب في الركبتين، ثم شكل البالغين.</div>

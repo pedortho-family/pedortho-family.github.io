@@ -438,7 +438,7 @@ window.conditionsSkeletal = [
           <p>هي المعيار الذهبي لعلاج القدم الحنفاء في العالم، ونسبة نجاحها تتجاوز 95%. تبدأ عادة في الأسابيع الأولى بعد الولادة، وتمر بأربع مراحل:</p>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/clubfoot/ponseti-journey.png"
+            <img class="figure-full" src="images/clubfoot/ponseti-journey.jpg"
                  alt="رسم توضيحي لمراحل علاج القدم الحنفاء بطريقة بونسيتي: جبس أسبوعي، ثم قطع وتر أخيل وجبس أخير، ثم الحذاء والقضيب طوال اليوم، ثم وقت النوم فقط"
                  loading="lazy" />
             <div class="illustration-caption">مراحل العلاج الأربع بطريقة بونسيتي، من الجبس الأسبوعي حتى جبيرة النوم.</div>
@@ -1393,7 +1393,7 @@ window.conditionsSkeletal = [
   },
   {
     id: "calcaneovalgus",
-    source: "AboutKidsHealth (SickKids)، aboutkidshealth.ca، ومراجع جراحة عظام الأطفال",
+    source: "AboutKidsHealth (SickKids)، aboutkidshealth.ca، ومنه رسوم القدم والتمارين، ومراجع جراحة عظام الأطفال",
     name: "القدم المرفوعة عند المولود",
     englishName: "Positional Calcaneovalgus",
     icon: "🦶",
@@ -1411,7 +1411,7 @@ window.conditionsSkeletal = [
           </div>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/calcaneovalgus/foot-and-stretches.png"
+            <img class="figure-full" src="images/calcaneovalgus/foot-and-stretches.jpg"
                  alt="رسم توضيحي لقدم مولود مرفوعة للأعلى وللخارج، وتمرينين لطيفين: ثني القدم للأسفل، ثم للأسفل وللداخل"
                  loading="lazy" />
             <div class="illustration-caption">شكل القدم عند الولادة، والتمرينان اللذان يساعدان القدم على العودة لوضعها الطبيعي.</div>
@@ -1449,6 +1449,10 @@ window.conditionsSkeletal = [
             <li>الطفل لا يتألم عند لمس القدم أو تحريكها</li>
             <li>الساق نفسها مستقيمة، والطفل يحرك ساقيه بشكل طبيعي</li>
           </ul>
+          <div class="illustration-container">
+            <img src="images/calcaneovalgus/feet-up.jpg" alt="رسم لقدمي مولود مرفوعتين للأعلى وللخارج" loading="lazy" />
+            <div class="illustration-caption">قدما مولود مرفوعتان للأعلى وللخارج عند الولادة.</div>
+          </div>
         `
       },
       {
@@ -1480,10 +1484,18 @@ window.conditionsSkeletal = [
             <div class="step-item" data-step="1">
               <h4>ثني القدم للأسفل</h4>
               <p>أمسك ساق الطفل بيد، وباليد الأخرى وجّه أصابع القدم للأسفل بلطف قدر ما تسمح القدم. اثبت 20 إلى 30 ثانية، أو أكثر إذا كان الطفل مرتاحاً.</p>
+              <div class="illustration-container">
+                <img src="images/calcaneovalgus/stretch-down.jpg" alt="يدان تثبتان ساق الطفل وتوجّهان القدم للأسفل بلطف" loading="lazy" />
+                <div class="illustration-caption">يد تثبت الساق، والأخرى توجّه القدم للأسفل.</div>
+              </div>
             </div>
             <div class="step-item" data-step="2">
               <h4>للأسفل وللداخل</h4>
               <p>بنفس الطريقة، حرّك القدم للأسفل ثم للداخل قليلاً لإطالة العضلات على الجهة الخارجية للكاحل. اثبت 20 إلى 30 ثانية.</p>
+              <div class="illustration-container">
+                <img src="images/calcaneovalgus/stretch-down-in.jpg" alt="يدان توجّهان قدم الطفل للأسفل ثم للداخل بلطف" loading="lazy" />
+                <div class="illustration-caption">القدم للأسفل أولاً، ثم للداخل قليلاً.</div>
+              </div>
             </div>
           </div>
 
@@ -1838,7 +1850,7 @@ window.conditionsSkeletal = [
           </div>
 
           <div class="illustration-container">
-            <img class="figure-full" src="images/severs-apophysitis/heel-growth-plate.png"
+            <img class="figure-full" src="images/severs-apophysitis/heel-growth-plate.jpg"
                  alt="رسم توضيحي للقدم من الجانب يوضح مركز النمو في مؤخرة العقب، ووتر أخيل يشده للأعلى، واللفافة تحت القدم تشده للأمام، وصدمات الجري من الأرض"
                  loading="lazy" />
             <div class="illustration-caption">مركز النمو في مؤخرة العقب يتعرض لشد وتر أخيل من الأعلى، وشد اللفافة من تحت القدم، وصدمات الجري والقفز من الأرض.</div>
