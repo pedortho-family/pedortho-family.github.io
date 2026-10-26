@@ -814,7 +814,6 @@
     }
 
     function renderHomePage() {
-        const procCount = ((window.proceduresGuideData || {}).sections || []).filter(s => s.type !== 'guide-index').length;
         return `
             <section class="hello">
                 <h1>كل ما تحتاجونه عن حالة طفلكم</h1>
@@ -828,11 +827,11 @@
                 `).join('')}
             </div>
 
-            <a href="#" class="feature" data-go="procedures-guide">
-                <span class="feature-art">${svgIcon('clipboard-list')}</span>
+            <a href="#" class="feature feature-sm" data-go="about">
+                <span class="feature-art">${svgIcon('info')}</span>
                 <span class="feature-body">
-                    <span class="feature-title">تعليمات ما بعد العمليات</span>
-                    <span class="feature-sub">${procCount} ${arCount(procCount, WORDS.procedure)}، لكل منها تعليمات الجبس والأدوية والمتابعة</span>
+                    <span class="feature-title">عن البوابة</span>
+                    <span class="feature-sub">من يُعدّها، ولمن هي، وكيف تشاركها</span>
                 </span>
                 <span class="feature-go">${svgIcon('chevron-left')}</span>
             </a>
@@ -851,7 +850,6 @@
             </div>
 
             <p class="disclaimer-note">${svgIcon('info')}<span><strong>تنبيه مهم:</strong> هذا المحتوى للأغراض التعليمية فقط ولا يُغني عن استشارة الطبيب المختص. استشر طبيب طفلك دائماً قبل اتخاذ أي قرارات علاجية.</span></p>
-            <a href="#" class="about-row" data-go="about">${svgIcon('info')}<span>عن البوابة</span>${svgIcon('chevron-left')}</a>
         `;
     }
 
