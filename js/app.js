@@ -210,7 +210,17 @@
         'calcaneus-fracture': 'heel',
         'midfoot-fracture': 'talus navicular cuboid lisfranc',
         'metatarsal-fracture': 'jones',
-        'growth-plate-fracture': 'physeal salter harris'
+        'growth-plate-fracture': 'physeal salter harris',
+        'calcaneovalgus': 'calcaneo valgus positional newborn foot',
+        'curly-toe': 'curly toes',
+        'osgood-schlatter': 'osgood schlatter tibial tubercle apophysitis knee bump',
+        'severs-apophysitis': 'sever severs heel pain calcaneal apophysitis',
+        'non-ossifying-fibroma': 'nof fibrous cortical defect',
+        'osteochondroma': 'exostosis mhe hme multiple hereditary exostoses',
+        'transient-synovitis': 'irritable hip toxic synovitis limp',
+        'septic-arthritis': 'septic hip joint infection',
+        'bowed-legs-knock-knees': 'genu varum genu valgum bow legs knock knees blount rickets',
+        'nursemaids-elbow': 'nursemaid pulled elbow radial head subluxation'
     };
     // Post-op procedures by number: the short names surgeons use.
     const PROC_ALIASES = {

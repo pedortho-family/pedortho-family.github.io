@@ -15,16 +15,6 @@ window.MedicalIllustrations = {
         </div>
     `,
 
-    // ---- Clubfoot ----
-    clubfoot: `
-        <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Varus_Illustration.png"
-                 alt="رسم توضيحي للقدم الحنفاء - تشوه القدم عند الولادة"
-                 loading="lazy" />
-            <div class="illustration-caption">رسم توضيحي لتشوه القدم الحنفاء (Clubfoot) - المصدر: Wikimedia Commons</div>
-        </div>
-    `,
-
     // ---- Supracondylar Fracture (pre-op) ----
     supracondylar: `
         <div class="illustration-container">
