@@ -6,6 +6,9 @@
 (function() {
     'use strict';
 
+    // Who prepares and reviews the portal. Shown quietly under each topic, on Home and on the About page.
+    const EDITOR = { name: 'د. موسى الأحمري', role: 'استشاري جراحة عظام الأطفال', updated: 'أكتوبر 2026' };
+
     // ---- App State ----
     const state = {
         currentPage: 'home',
@@ -351,7 +354,8 @@
                 list.map(c => link(c.id, c.id === 'surgery-guide' ? 'stethoscope' : g.icon, c.name, 'g-' + g.key)).join('') +
                 (g.key === 'care' ? link('procedures-guide', 'clipboard-list', 'تعليمات ما بعد العمليات', 'g-care') : '')
             ).join('')).join('') +
-            link('qr-codes', 'qr-code', 'رموز QR للطباعة');
+            link('qr-codes', 'qr-code', 'رموز QR للطباعة') +
+            link('about', 'info', 'عن البوابة');
     }
 
     // The pre/post-surgery guide is listed with the care guides.
@@ -638,6 +642,10 @@
                 bindFAQToggles();
                 openRequestedSection(main, false);
                 break;
+            case 'about':
+                state.currentTitle = 'عن البوابة';
+                main.innerHTML = renderAboutPage();
+                break;
             case 'qr-codes':
                 state.currentTitle = 'رموز QR للطباعة';
                 main.innerHTML = renderQRPage();
@@ -765,7 +773,8 @@
         const fixed = {
             'categories': { icon: 'layout-grid', label: 'الأقسام' },
             'procedures-guide': { icon: 'clipboard-list', label: 'دليل العمليات' },
-            'qr-codes': { icon: 'qr-code', label: 'رموز QR' }
+            'qr-codes': { icon: 'qr-code', label: 'رموز QR' },
+            'about': { icon: 'info', label: 'عن البوابة' }
         };
         const g = topicGroup(page);
         let crumb = fixed[page] || { icon: g.icon, label: page === 'surgery-guide' ? 'دليل الجراحة' : g.name };
@@ -786,6 +795,26 @@
     }
 
     // ---- Home Page ----
+    function renderAboutPage() {
+        return `
+            ${pageHero({ group: 'care', icon: 'info', title: 'عن البوابة', desc: 'لماذا أُنشئت، ومن يراجعها، وكيف يمكن استخدامها' })}
+            <div class="condition-content about">
+                <div class="content-section"><div class="section-body open">
+                    <h3>من أعدّ البوابة؟</h3>
+                    <p>أعدّ محتوى هذه البوابة ويراجعه طبياً ${EDITOR.name}، ${EDITOR.role}. تُراجَع المواضيع دورياً وفق المراجع الحديثة وبروتوكولات العلاج، وآخر تحديث كان في ${EDITOR.updated}.</p>
+                    <h3>لمن هذه البوابة؟</h3>
+                    <p>للأسر أولاً: شرح واضح بالعربية لحالات عظام الأطفال وعلاجها. وهي مفتوحة أيضاً لجميع أطباء وجراحي عظام الأطفال وفرقهم، ليشاركوا روابطها ورموز QR الخاصة بها مع أسر مرضاهم مجاناً.</p>
+                    <h3>حقوق الاستخدام</h3>
+                    <p>يمكنك مشاركة الصفحات وطباعتها وإرسال روابطها للأسر بحرية.</p>
+                    <h3>المصادر والصور</h3>
+                    <p>بعض الصفحات مقتبسة من OrthoKids (الجمعية الأمريكية لجراحة عظام الأطفال POSNA) بإذن كتابي، وبعض الرسوم من AboutKidsHealth (مستشفى SickKids) وتبقى حقوقها لأصحابها. ويُذكر مصدر كل صفحة في أسفلها.</p>
+                    <h3>تنبيه طبي</h3>
+                    <p>هذا المحتوى للتثقيف فقط ولا يغني عن استشارة الطبيب المعالج.</p>
+                </div></div>
+            </div>
+        `;
+    }
+
     function renderHomePage() {
         const procCount = ((window.proceduresGuideData || {}).sections || []).filter(s => s.type !== 'guide-index').length;
         return `
@@ -916,6 +945,7 @@
                 ${sections.map((s, i) => renderSection(s, i, shareCtx)).join('')}
             </div>
             ${condition.source ? `<p class="page-source">${svgIcon('book-open')}<span>المصدر: ${condition.source}</span></p>` : ''}
+            <p class="page-source page-credit">${svgIcon('stethoscope')}<span>مراجعة طبية: ${EDITOR.name}، ${EDITOR.role} · آخر تحديث: ${EDITOR.updated} · <a href="#" data-go="about">عن البوابة</a></span></p>
             ${renderCtaBar(condition.id, condition.name, condition.shortDesc || '')}
         `;
     }

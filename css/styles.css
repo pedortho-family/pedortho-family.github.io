@@ -2146,3 +2146,7 @@ body.share-open { overflow: hidden; }
     width: 100%;
     height: auto;
 }
+
+/* ---- Quiet credit: reviewer under each topic, editor on Home ---- */
+.page-credit { margin-top: 6px; }
+.page-credit a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
