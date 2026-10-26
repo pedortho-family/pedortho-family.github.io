@@ -2150,3 +2150,8 @@ body.share-open { overflow: hidden; }
 /* ---- Quiet credit: reviewer under each topic, editor on Home ---- */
 .page-credit { margin-top: 6px; }
 .page-credit a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- About row at the bottom of Home ---- */
+.about-row { display: flex; align-items: center; gap: 10px; margin: 16px 0 72px; padding: 14px 16px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-weight: 600; font-size: 15px; text-decoration: none; }
+.about-row span { flex: 1; }
+.about-row .ic { width: 20px; height: 20px; color: var(--ink-2); }

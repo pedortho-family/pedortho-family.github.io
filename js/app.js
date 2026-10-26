@@ -853,6 +853,7 @@
             </div>
 
             <p class="disclaimer-note">${svgIcon('info')}<span><strong>تنبيه مهم:</strong> هذا المحتوى للأغراض التعليمية فقط ولا يُغني عن استشارة الطبيب المختص. استشر طبيب طفلك دائماً قبل اتخاذ أي قرارات علاجية.</span></p>
+            <a href="#" class="about-row" data-go="about">${svgIcon('info')}<span>عن البوابة</span>${svgIcon('chevron-left')}</a>
         `;
     }
 
