@@ -1413,6 +1413,58 @@ window.proceduresGuideData = {
           <p>مع التشنّج المستمر تقصر بعض العضلات والأوتار وتسحب المفاصل إلى وضعيات خاطئة: الفخذان متقاربان، الركبتان مثنيتان، والكاحلان في وضع رأس القدم. إطالة الأنسجة الرخوة تعيد للعضلة طولاً وظيفياً فتتحسن الوضعية والمشي والجلوس والعناية. غالباً تُجرى عدة إطالات معاً في جلسة واحدة (جراحة متعددة المستويات) لتفادي تكرار التخدير والتأهيل.</p>
         </div>
 
+        <h3>8 فيديوهات قصيرة</h3>
+        <div class="video-reels">
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-1-after-surgery-ar-poster.jpg">
+              <source src="videos/soft-tissue-1-after-surgery-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">1. لماذا يبدو طفلي أضعف بعد العملية؟</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-2-tightness-ar-poster.jpg">
+              <source src="videos/soft-tissue-2-tightness-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">2. هل يعود الشدّ بعد العملية؟</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-3-one-session-ar-poster.jpg">
+              <source src="videos/soft-tissue-3-one-session-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">3. لماذا عدة عمليات في جلسة واحدة؟</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-4-botox-or-surgery-ar-poster.jpg">
+              <source src="videos/soft-tissue-4-botox-or-surgery-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">4. البوتوكس أم الجراحة؟</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-5-school-physio-ar-poster.jpg">
+              <source src="videos/soft-tissue-5-school-physio-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">5. العودة للمدرسة والعلاج الطبيعي</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-6-first-week-ar-poster.jpg">
+              <source src="videos/soft-tissue-6-first-week-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">6. الأسبوع الأول: التشنّج والأدوية</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-7-braces-skin-ar-poster.jpg">
+              <source src="videos/soft-tissue-7-braces-skin-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">7. المثبّتات والعناية بالجلد</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/soft-tissue-8-warning-signs-ar-poster.jpg">
+              <source src="videos/soft-tissue-8-warning-signs-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">8. علامات الخطر</div>
+          </div>
+        </div>
+
         <h3>ما الذي يحدث داخل غرفة العمليات؟</h3>
         <div class="responsive-table">
           <table class="data-table">
