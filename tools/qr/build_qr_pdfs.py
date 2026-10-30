@@ -9,7 +9,8 @@ printed by Chrome, so a change to the site's look is easy to carry over here.
   QR-Clinic-Cards.pdf       two cut-out cards per page, one per topic
   QR-Clinic-Table-Card.pdf  the same pages as All Topics, under the clinic's heading
 
-Codes hold the short links (tools/qr/qr_common.py topic_url); the short-link pages
+Codes hold the short links (tools/qr/qr_common.py topic_url) and are also links
+themselves, so a PDF read on a phone opens by tapping; the short-link pages
 are rebuilt first (tools/links/build_links.py), and the topic list is checked
 against the site before anything is built. The build stops if a page no longer
 fits its sheet, so a new topic can never push codes off the paper unnoticed.
@@ -159,6 +160,7 @@ CSS = """
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+a { color: inherit; text-decoration: none; }
 :root {
   --page: #F3F5F4; --surface: #FCFDFC; --ink: #263540; --ink-2: #5F6E78; --ink-3: #85919A;
   --line: #D8DEDC; --edge: #56636D; --teal: #2F6F68; --deep: #2D5D66; --deep-dark: #1E4148;
@@ -273,16 +275,16 @@ def foot(page_label=""):
 def head(title, sub, with_main=True):
     main = ""
     if with_main:
-        main = (f'<div class="main-qr"><div><b class="display">البوابة الرئيسية</b><span>جميع المواضيع</span></div>'
-                f'<div class="box">{qr_svg(topic_url())}</div></div>')
+        main = (f'<a class="main-qr" href="{esc(topic_url())}"><div><b class="display">البوابة الرئيسية</b><span>جميع المواضيع</span></div>'
+                f'<div class="box">{qr_svg(topic_url())}</div></a>')
     return (f'<div class="head"><div class="mark">{icon("bone")}</div>'
             f'<div class="grow"><h1 class="display">{esc(title)}</h1><p>{esc(sub)}</p></div>{main}</div>')
 
 
 def tile(t, group, number=False):
     num = f'<div class="num display">{t["n"]}</div>' if number else ""
-    return (f'<div class="tile g-{group}">{num}<div class="box">{qr_svg(t["url"])}</div>'
-            f'<div class="name display">{esc(t.get("short", t["name"]))}</div><div class="en">{esc(t.get("short_en", t["en"]))}</div></div>')
+    return (f'<a class="tile g-{group}" href="{esc(t["url"])}">{num}<div class="box">{qr_svg(t["url"])}</div>'
+            f'<div class="name display">{esc(t.get("short", t["name"]))}</div><div class="en">{esc(t.get("short_en", t["en"]))}</div></a>')
 
 
 def group_block(key, name, ic, items, cols, number=False):
@@ -344,7 +346,7 @@ def solo_page(t, group, ic, number=None):
             f'<div class="brand"><div class="mark">{icon("bone")}</div><div style="text-align:right"><b class="display">بوابة تثقيف الأسرة</b><br><span>وحدة جراحة عظام الأطفال</span></div></div>'
             f'<div class="sticker">{art}</div><h2 class="display">{esc(t["name"])}</h2><div class="en">{esc(t["en"])}</div>'
             f'<p class="desc">{esc(t.get("desc", ""))}</p>'
-            f'<div class="qrcard">{qr_svg(t["url"])}</div>'
+            f'<a class="qrcard" href="{esc(t["url"])}">{qr_svg(t["url"])}</a>'
             f'<div class="scan">{icon("qr-code")}امسح الرمز بكاميرا هاتفك لفتح هذه الصفحة</div><div class="url">{esc(link)}</div>'
             f'{foot()}</div>')
 
@@ -356,7 +358,7 @@ def card(t, group, ic, number=None):
             f'<div class="brand"><div class="mark">{icon("bone")}</div><b class="display">بوابة تثقيف الأسرة</b></div>'
             f'<div class="tag">{tag}</div><h3 class="display">{esc(t["name"])}</h3><div class="en">{esc(t["en"])}</div>'
             f'<div class="scan">{icon("qr-code")}امسح الرمز بكاميرا هاتفك</div></div>'
-            f'<div><div class="box">{qr_svg(t["url"])}</div><div class="url">{esc(link)}</div></div></div>')
+            f'<a href="{esc(t["url"])}"><div class="box">{qr_svg(t["url"])}</div><div class="url">{esc(link)}</div></a></div>')
 
 
 def cards_pages(items):
