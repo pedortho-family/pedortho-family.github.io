@@ -3,7 +3,7 @@
 colours, icons and card shapes as the website (C2). Each PDF is an HTML page
 printed by Chrome, so a change to the site's look is easy to carry over here.
 
-  QR-All-Topics.pdf         conditions and care guides; fractures (2 pages); post-op procedures
+  QR-All-Topics.pdf         conditions; fractures (2 pages); post-op procedures and care guides
   QR-Individual-Topics.pdf  one page per topic, large code
   QR-Clinic-Poster.pdf      wall poster, larger codes: conditions, care guides, fractures, procedures
   QR-Clinic-Cards.pdf       two cut-out cards per page, one per topic
@@ -11,7 +11,8 @@ printed by Chrome, so a change to the site's look is easy to carry over here.
 
 Codes hold the short links (tools/qr/qr_common.py topic_url); the short-link pages
 are rebuilt first (tools/links/build_links.py), and the topic list is checked
-against the site before anything is built.
+against the site before anything is built. The build stops if a page no longer
+fits its sheet, so a new topic can never push codes off the paper unnoticed.
 
 Run from anywhere: python3 tools/qr/build_qr_pdfs.py   (QR_OUT=<dir> for a trial set)
 """
@@ -291,16 +292,17 @@ def group_block(key, name, ic, items, cols, number=False):
 
 
 def group_row(key, name, ic, items, cols):
-    """One row per group, its name in the first box: fits every topic on one A4 page."""
+    """A group's tiles with its name in the first box, so the rows sit tight on the page."""
     label = f'<div class="label"><span class="dot">{icon(ic)}</span><b class="display">{esc(name)}</b></div>'
     return (f'<div class="tiles g-{key}" style="grid-template-columns: repeat({cols}, 1fr)">{label}'
             + "".join(tile(t, key) for t in items) + "</div>")
 
 
 def sheet_pages(groups, procs, title, sub, cols, proc_cols):
-    """Conditions and care guides on the first page (one row per group), then the
-    fractures (upper limb; pelvis, lower limb and general), then the procedures."""
-    topics = "".join(group_row(k, n, i, items, cols) for k, n, i, items in groups if k != "fracture")
+    """Conditions on the first page (one row per group), then the fractures (upper
+    limb; pelvis, lower limb and general), then the procedures with the care guides."""
+    topics = "".join(group_row(k, n, i, items, cols) for k, n, i, items in groups if k not in ("fracture", "care"))
+    care = "".join(group_row(k, n, i, items, cols) for k, n, i, items in groups if k == "care")
     pages = [f'<div class="page">{head(title, sub)}{topics}{foot()}</div>']
     blocks = fracture_blocks(groups)
     for chunk in (blocks[:1], blocks[1:]):
@@ -308,7 +310,7 @@ def sheet_pages(groups, procs, title, sub, cols, proc_cols):
             pages.append(f'<div class="page">{head("الكسور", "امسح رمز الكسر لفتح صفحته مباشرةً", with_main=False)}'
                          + "".join(group_block(k, n, i, items, proc_cols) for k, n, i, items in chunk) + f'{foot()}</div>')
     pages.append(f'<div class="page">{head(POSTOP[1], "رمز لكل عملية: يفتح تعليماتها مباشرةً", with_main=False)}'
-                 f'{group_block(POSTOP[0], POSTOP[1], POSTOP[2], procs, proc_cols, number=True)}{foot()}</div>')
+                 f'{group_block(POSTOP[0], POSTOP[1], POSTOP[2], procs, proc_cols, number=True)}{care}{foot()}</div>')
     return "".join(pages)
 
 
@@ -319,11 +321,10 @@ HOWTO = (f'<section class="howto"><h2 class="group-h display"><span class="dot" 
 
 
 def poster_pages(groups, procs):
-    """Larger codes: conditions, then care guides with how-to, then fractures, then procedures."""
-    conditions = [g for g in groups if g[0] in ("neuro", "bone", "hip")]
-    care = [g for g in groups if g[0] == "care"]
-    p1 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in conditions)
-    p2 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in care)
+    """Larger codes: neuromuscular and bone conditions, then hip and care guides with
+    how-to, then fractures, then procedures."""
+    p1 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in groups if k in ("neuro", "bone"))
+    p2 = "".join(group_block(k, n, i, items, 5) for k, n, i, items in groups if k in ("hip", "care"))
     blocks = fracture_blocks(groups)
     fractures = "".join(
         f'<div class="page">{head("الكسور", "امسح رمز الكسر لفتح صفحته مباشرةً", with_main=False)}'
@@ -371,14 +372,34 @@ def cards_pages(items):
 
 # ---------------------------------------------------------------- build
 
+# A .page is a fixed A4 box that hides what spills out of it, so a page that grows
+# loses its last codes without any error. This names such pages on the <html> tag.
+MEASURE = """<script>
+addEventListener('load', () => document.fonts.ready.then(() => {
+  const pages = [...document.querySelectorAll('.page')];
+  document.documentElement.dataset.overflow = pages.flatMap((p, i) => p.scrollHeight > p.clientHeight ? [i + 1] : []).join(' ') || 'none';
+}));
+</script>"""
+
+
+def check_fits(chrome, page, out_path):
+    dom = subprocess.run([*chrome, "--dump-dom", "file://" + page], check=True, capture_output=True, text=True).stdout
+    found = re.search(r'data-overflow="([^"]*)"', dom)
+    if not found:
+        sys.exit(f"Could not measure the pages of {os.path.basename(out_path)}.")
+    if found.group(1) != "none":
+        sys.exit(f"{os.path.basename(out_path)}: page {found.group(1)} does not fit A4. Move a group to another page.")
+
+
 def print_pdf(body, out_path, tmp):
     doc = (f'<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">'
-           f'<style>{fonts_css()}{CSS}</style></head><body>{body}</body></html>')
+           f'<style>{fonts_css()}{CSS}</style>{MEASURE}</head><body>{body}</body></html>')
     page = os.path.join(tmp, "page.html")
     open(page, "w").write(doc)
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={tmp}/profile",
-                    "--allow-file-access-from-files", "--no-pdf-header-footer", "--virtual-time-budget=6000",
-                    f"--print-to-pdf={out_path}", "file://" + page], check=True, capture_output=True)
+    chrome = [CHROME, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={tmp}/profile",
+              "--allow-file-access-from-files", "--no-pdf-header-footer", "--virtual-time-budget=6000"]
+    check_fits(chrome, page, out_path)
+    subprocess.run([*chrome, f"--print-to-pdf={out_path}", "file://" + page], check=True, capture_output=True)
     print("Created:", out_path)
 
 
