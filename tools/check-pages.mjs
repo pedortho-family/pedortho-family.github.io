@@ -61,7 +61,7 @@ const evaluate = async (expression) => (await s('Runtime.evaluate', { expression
 // Runs in the page after everything is opened.
 const PROBE = `(async () => {
     const W = innerWidth, issues = { overflow: [], clipped: [], images: [], emoji: [], icons: [], contrast: [] };
-    const scrollers = '.pills, .quick-nav, .responsive-table, .share-sheet, .bottom-nav, .cta-bar, .header, .side-nav';
+    const scrollers = '.pills, .quick-nav, .responsive-table, .video-reels, .share-sheet, .bottom-nav, .cta-bar, .header, .side-nav';
 
     // sideways scrolling
     if (document.documentElement.scrollWidth > W + 1) {
@@ -80,7 +80,7 @@ const PROBE = `(async () => {
     for (const card of document.querySelectorAll('#mainContent .content-section, #mainContent .section-body.single, #mainContent .qr-card, #mainContent .prow')) {
         const box = card.getBoundingClientRect();
         for (const el of card.querySelectorAll('*')) {
-            if (el.closest('.responsive-table, .pills, .quick-nav')) continue;
+            if (el.closest('.responsive-table, .video-reels, .pills, .quick-nav')) continue;
             const r = el.getBoundingClientRect();
             if (r.width && (r.right > box.right + 1 || r.left < box.left - 1)) {
                 issues.clipped.push((el.className || el.tagName) + ' by ' + Math.round(Math.max(r.right - box.right, box.left - r.left)) + 'px');

@@ -209,6 +209,32 @@ window.castCareData = [
     badges: ["رعاية منزلية", "خلع الورك"],
     sections: [
       {
+        type: "video",
+        title: "فيديوهات قصيرة",
+        content: `
+          <div class="video-reels">
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/spica-1-positions-ar-poster.jpg">
+                <source src="videos/spica-1-positions-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">1. الوضعيات وطريقة حمل الطفل</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/spica-2-diaper-ar-poster.jpg">
+                <source src="videos/spica-2-diaper-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">2. الحفّاض وإبقاء الجبيرة جافة</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/spica-3-warning-signs-ar-poster.jpg">
+                <source src="videos/spica-3-warning-signs-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">3. علامات الخطر وما بعد إزالة الجبيرة</div>
+            </div>
+          </div>
+        `
+      },
+      {
         type: "overview",
         title: "نظرة عامة",
         content: `

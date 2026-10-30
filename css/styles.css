@@ -1178,6 +1178,31 @@ h1, h2, h3, h4 { font-family: var(--font-display); }
     border-radius: var(--radius);
 }
 
+/* Vertical reels: three across on wide screens, a swipeable row on phones */
+.video-reels {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.video-container.is-reel { margin: 0; min-width: 0; }
+
+.video-container.is-reel video { aspect-ratio: 9 / 16; }
+
+@media (max-width: 640px) {
+    .video-reels {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .video-reels::-webkit-scrollbar { display: none; }
+
+    .video-container.is-reel { flex: 0 0 min(72%, 240px); scroll-snap-align: start; }
+}
+
 /* ---- FAQ ---- */
 .faq-item {
     padding: 14px 0;
