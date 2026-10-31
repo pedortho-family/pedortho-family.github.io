@@ -1842,6 +1842,26 @@ window.conditionsSkeletal = [
     badges: ["شائع", "يزول مع اكتمال النمو"],
     sections: [
       {
+        type: "video",
+        title: "فيديوهات قصيرة",
+        content: `
+          <div class="video-reels is-two">
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/severs-1-xray-ar-poster.jpg">
+                <source src="videos/severs-1-xray-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">1. لماذا يؤلم العقب؟ شرح الأشعة</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/severs-2-home-care-ar-poster.jpg">
+                <source src="videos/severs-2-home-care-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">2. العلاج في البيت ومتى تراجعون الطبيب</div>
+            </div>
+          </div>
+        `
+      },
+      {
         type: "overview",
         title: "نظرة عامة",
         content: `
