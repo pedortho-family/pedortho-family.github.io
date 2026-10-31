@@ -1706,6 +1706,26 @@ window.conditionsSkeletal = [
     badges: ["شائع عند الرياضيين", "يزول مع اكتمال النمو"],
     sections: [
       {
+        type: "video",
+        title: "فيديوهات قصيرة",
+        content: `
+          <div class="video-reels is-two">
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/osgood-1-explained-ar-poster.jpg">
+                <source src="videos/osgood-1-explained-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">1. ما هذا النتوء أسفل الركبة؟</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/osgood-2-sport-care-ar-poster.jpg">
+                <source src="videos/osgood-2-sport-care-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">2. الرياضة والعلاج ومتى تراجعون الطوارئ</div>
+            </div>
+          </div>
+        `
+      },
+      {
         type: "overview",
         title: "نظرة عامة",
         content: `
