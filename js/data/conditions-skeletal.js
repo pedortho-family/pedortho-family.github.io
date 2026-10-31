@@ -18,6 +18,74 @@ window.conditionsSkeletal = [
     badges: ["مرض وراثي", "هشاشة العظام"],
     sections: [
       {
+        type: "video",
+        title: "10 فيديوهات قصيرة",
+        content: `
+          <div class="video-reels">
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-01-what-is-it-ar-poster.jpg">
+                <source src="videos/oi-01-what-is-it-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">1. ما هو تكوّن العظم الناقص؟</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-02-types-inheritance-ar-poster.jpg">
+                <source src="videos/oi-02-types-inheritance-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">2. الأنواع والوراثة</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-03-symptoms-ar-poster.jpg">
+                <source src="videos/oi-03-symptoms-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">3. الأعراض والعلامات</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-04-diagnosis-ar-poster.jpg">
+                <source src="videos/oi-04-diagnosis-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">4. التشخيص</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-05-bisphosphonates-ar-poster.jpg">
+                <source src="videos/oi-05-bisphosphonates-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">5. العلاج بالبيسفوسفونات</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-06-safe-handling-ar-poster.jpg">
+                <source src="videos/oi-06-safe-handling-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">6. التعامل الآمن والحركة في البيت</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-07-telescoping-rod-ar-poster.jpg">
+                <source src="videos/oi-07-telescoping-rod-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">7. الجراحة والقضيب التلسكوبي</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-08-before-after-surgery-ar-poster.jpg">
+                <source src="videos/oi-08-before-after-surgery-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">8. قبل العملية وبعدها</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-09-parents-questions-ar-poster.jpg">
+                <source src="videos/oi-09-parents-questions-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">9. أسئلة الأهل</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/oi-10-fracture-warning-signs-ar-poster.jpg">
+                <source src="videos/oi-10-fracture-warning-signs-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">10. عند الكسر وعلامات الخطر</div>
+            </div>
+          </div>
+        `
+      },
+      {
         type: "overview",
         title: "نظرة عامة",
         content: `
@@ -194,7 +262,7 @@ window.conditionsSkeletal = [
         title: "قبل العملية",
         content: `
           <ul>
-            <li><strong>البيسفوسفونات:</strong> آخر جرعة قبل العملية بـ 48 ساعة على الأقل</li>
+            <li><strong>البيسفوسفونات:</strong> يُفضَّل أن تكون آخر جرعة قبل العملية بأسبوعين على الأقل</li>
             <li><strong>عيادة ما قبل التخدير:</strong> قبل العملية بأسبوعين على الأقل</li>
             <li><strong>الدخول:</strong> في يوم العملية نفسه، والإقامة يومان تقريباً يتعلم فيهما الأهل العناية بالجبس والتعامل الآمن مع العلاج الطبيعي وفني الجبس</li>
           </ul>
@@ -305,7 +373,7 @@ window.conditionsSkeletal = [
           </div>
           <div class="faq-item">
             <div class="faq-question">لماذا نوقف البيسفوسفونات حول العملية؟</div>
-            <div class="faq-answer">نعطي آخر جرعة قبل العملية بيومين على الأقل، ونؤجل الجرعة التالية حتى 3 أشهر بعد العملية عندما تُظهر الأشعة بداية الالتئام، حتى لا يتأخر التئام العظم الذي قُطع أثناء العملية.</div>
+            <div class="faq-answer">يُفضَّل أن تكون آخر جرعة قبل العملية بأسبوعين على الأقل، ونؤجل الجرعة التالية حتى 3 أشهر بعد العملية عندما تُظهر الأشعة بداية الالتئام، حتى لا يتأخر التئام العظم الذي قُطع أثناء العملية.</div>
           </div>
           <div class="faq-item">
             <div class="faq-question">هل البيسفوسفونات آمنة على المدى الطويل؟</div>
