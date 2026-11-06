@@ -1760,6 +1760,22 @@ window.proceduresGuideData = {
           <p>عندما يصبح تشوه القدم <strong>ثابتاً</strong> ولا يمكن تصحيحه باليد، ولا تكفي إطالة الأوتار أو الدعامات، يكون الحل هو تصحيح وضع العظام ثم دمج المفاصل المتضررة معاً لتلتحم في وضع صحيح ومستقر. النتيجة قدم مسطحة على الأرض، تتحمل الوزن بلا ألم، ويسهل لبس الحذاء والجهاز عليها - لكنها قدم <strong>أقل مرونة بشكل دائم</strong>، وهذه مقايضة مقصودة ومعروفة.</p>
         </div>
 
+        <h3>فيديوهات قصيرة</h3>
+        <div class="video-reels is-two">
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/foot-fusion-1-why-surgery-ar-poster.jpg">
+              <source src="videos/foot-fusion-1-why-surgery-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">1. لماذا تحتاج القدم إلى الدمج؟</div>
+          </div>
+          <div class="video-container is-reel">
+            <video controls preload="none" playsinline poster="videos/foot-fusion-2-recovery-ar-poster.jpg">
+              <source src="videos/foot-fusion-2-recovery-ar.mp4" type="video/mp4" />
+            </video>
+            <div class="illustration-caption">2. كيف يكون التعافي بعد العملية؟</div>
+          </div>
+        </div>
+
         <div class="info-box warning">
           <div class="info-box-icon">⚠️</div>
           <div class="info-box-content">
