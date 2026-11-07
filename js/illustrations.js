@@ -8,10 +8,10 @@ window.MedicalIllustrations = {
     // ---- Hip Joint DDH - X-ray ----
     hipDDH: `
         <div class="illustration-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Dysplasie_de_hanche_-_avant_op%C3%A9ration.jpg"
-                 alt="صورة أشعة لخلع الورك التطوري قبل الجراحة"
-                 loading="lazy" />
-            <div class="illustration-caption">صورة أشعة لخلع الورك التطوري (DDH) قبل الجراحة - المصدر: Wikimedia Commons (CC0)</div>
+            <img src="images/ddh/ddh-right-hip-xray.jpg"
+                 alt="صورة أشعة للحوض تُظهر خلع الورك التطوري في الورك الأيمن داخل المربع الأحمر"
+                 width="425" height="380" loading="lazy" />
+            <div class="illustration-caption">صورة أشعة لخلع الورك التطوري (DDH) في الورك الأيمن، داخل المربع الأحمر. في صور الأشعة يظهر الجانب الأيمن من جسم الطفل على يسار الصورة.</div>
         </div>
     `,
 
