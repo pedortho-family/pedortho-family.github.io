@@ -158,23 +158,26 @@ h1, h2, h3, h4 { font-family: var(--font-display); }
     width: 34px;
     height: 34px;
     border-radius: 11px;
-    background: var(--deep);
-    color: #fff;
+    background: #fff;
+    border: 1.5px solid var(--line);
+    color: var(--deep);
     display: grid;
     place-items: center;
     flex: none;
 }
 
 .brand-mark .ic { width: 19px; height: 19px; stroke-width: 2; }
+.brand-mark img { display: block; width: 28px; height: 28px; object-fit: contain; }
 
 .brand-mark-lg {
     width: 84px;
     height: 84px;
     border-radius: 26px;
-    box-shadow: 0 6px 0 var(--deep-dark);
+    box-shadow: 0 6px 0 var(--line);
 }
 
 .brand-mark-lg .ic { width: 44px; height: 44px; }
+.brand-mark-lg img { width: 72px; height: 72px; }
 
 /* ---- Splash Screen ---- */
 .splash-screen {
