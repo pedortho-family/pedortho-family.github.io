@@ -423,6 +423,62 @@ window.conditionsSkeletal = [
     badges: ["حالة خلقية", "قابلة للعلاج"],
     sections: [
       {
+        type: "video",
+        title: "8 فيديوهات قصيرة",
+        content: `
+          <div class="video-reels">
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-1-ponseti-ar-poster.jpg">
+                <source src="videos/clubfoot-1-ponseti-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">1. رحلة العلاج بطريقة بونسيتي</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-2-when-to-start-ar-poster.jpg">
+                <source src="videos/clubfoot-2-when-to-start-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">2. متى نبدأ العلاج؟</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-3-how-casting-works-ar-poster.jpg">
+                <source src="videos/clubfoot-3-how-casting-works-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">3. كيف يصحّح الجبس القدم؟</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-4-warning-signs-ar-poster.jpg">
+                <source src="videos/clubfoot-4-warning-signs-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">4. علامات الخطر أثناء الجبس</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-5-cast-removal-home-ar-poster.jpg">
+                <source src="videos/clubfoot-5-cast-removal-home-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">5. إزالة الجبس في البيت</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-6-tenotomy-ar-poster.jpg">
+                <source src="videos/clubfoot-6-tenotomy-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">6. قطع وتر أخيل</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-7-boots-and-bar-ar-poster.jpg">
+                <source src="videos/clubfoot-7-boots-and-bar-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">7. الحذاء والقضيب</div>
+            </div>
+            <div class="video-container is-reel">
+              <video controls preload="none" playsinline poster="videos/clubfoot-8-mothers-questions-ar-poster.jpg">
+                <source src="videos/clubfoot-8-mothers-questions-ar.mp4" type="video/mp4" />
+              </video>
+              <div class="illustration-caption">8. أسئلة الأمهات</div>
+            </div>
+          </div>
+        `
+      },
+      {
         type: "overview",
         title: "نظرة عامة",
         content: `
