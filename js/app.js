@@ -29,8 +29,6 @@
 
     // ---- Initialize ----
     document.addEventListener('DOMContentLoaded', () => {
-        // If access is denied, don't initialize the app
-        if (window.__ACCESS_DENIED__) return;
         setTimeout(() => {
             const splash = $('#splash-screen');
             splash.classList.add('fade-out');

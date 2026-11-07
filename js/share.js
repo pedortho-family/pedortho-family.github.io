@@ -6,9 +6,9 @@
 (function () {
     'use strict';
 
-    /* The access token carried by the printed QR codes. Shared links include it
-       so a relative who receives the link on WhatsApp lands directly on the
-       topic, exactly as if they had scanned the QR code in the clinic. */
+    /* The token the printed QR codes carry (#access=...). The portal no longer
+       needs it (open to everyone since 2026-11-07); it stays in the links only
+       so they match the codes already printed. */
     const ACCESS_TOKEN = 'PedOrtho-Portal-2026';
     const FALLBACK_BASE_URL = 'https://pedortho-family.github.io/';
     const PORTAL_NAME = 'بوابة تثقيف الأسرة - وحدة جراحة عظام الأطفال';
